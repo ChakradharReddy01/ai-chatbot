@@ -1,0 +1,1071 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Chatbot & Knowledge Assistant</title>
+    <!-- Modern Inter font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Marked.js for markdown rendering -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        :root {
+            --bg-body: #0d1117;
+            --bg-card: #161b22;
+            --bg-card-hover: #1c2128;
+            --border-color: #30363d;
+            --border-highlight: #388bfd;
+            --text-primary: #e6edf3;
+            --text-secondary: #8b949e;
+            --text-muted: #6e7681;
+            --accent-blue: #2f81f7;
+            --accent-blue-hover: #388bfd;
+            --accent-green: #238636;
+            --accent-green-hover: #2ea043;
+            --accent-purple: #8957e5;
+            --accent-orange: #d29922;
+            --user-bubble: #1f3a5f;
+            --ai-bubble: #21262d;
+            --radius-md: 8px;
+            --radius-lg: 12px;
+            --shadow-subtle: 0 4px 12px rgba(0, 0, 0, 0.25);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-primary);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Top Navbar */
+        header {
+            background-color: var(--bg-card);
+            border-bottom: 1px solid var(--border-color);
+            padding: 12px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
+        }
+
+        .brand-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .brand-icon {
+            width: 34px;
+            height: 34px;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .brand-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .brand-subtitle {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .header-status-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .status-badge {
+            font-size: 12px;
+            padding: 4px 10px;
+            border-radius: 16px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 500;
+            border: 1px solid var(--border-color);
+            background-color: var(--bg-body);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .status-dot.online {
+            background-color: #3fb950;
+            box-shadow: 0 0 6px rgba(63, 185, 80, 0.6);
+        }
+
+        .status-dot.warn {
+            background-color: var(--accent-orange);
+            box-shadow: 0 0 6px rgba(210, 153, 34, 0.6);
+        }
+
+        /* Main Workspace Layout */
+        .workspace-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* Sidebar: Document & Mode Controls */
+        aside {
+            width: 340px;
+            background-color: var(--bg-card);
+            border-right: 1px solid var(--border-color);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            overflow-y: auto;
+            flex-shrink: 0;
+        }
+
+        .section-heading {
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        /* Mode Selector */
+        .mode-selector {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .mode-option {
+            padding: 10px 14px;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-color);
+            background: var(--bg-body);
+            color: var(--text-secondary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .mode-option:hover {
+            background: var(--bg-card-hover);
+            color: var(--text-primary);
+        }
+
+        .mode-option.active {
+            background: rgba(47, 129, 247, 0.15);
+            border-color: var(--accent-blue);
+            color: var(--text-primary);
+        }
+
+        .mode-option .icon {
+            font-size: 16px;
+        }
+
+        /* File Upload Box */
+        .upload-card {
+            background: var(--bg-body);
+            border: 2px dashed var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 18px;
+            text-align: center;
+            cursor: pointer;
+            transition: border-color 0.2s ease, background 0.2s ease;
+        }
+
+        .upload-card.drag-over {
+            border-color: var(--accent-blue);
+            background: rgba(47, 129, 247, 0.08);
+        }
+
+        .upload-icon {
+            font-size: 28px;
+            margin-bottom: 6px;
+            color: var(--accent-blue);
+        }
+
+        .upload-title {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+
+        .upload-desc {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        #fileInput {
+            display: none;
+        }
+
+        .selected-file-badge {
+            display: none;
+            margin-top: 10px;
+            padding: 8px 10px;
+            background: var(--bg-card-hover);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            font-size: 12px;
+            text-align: left;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .file-action-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .btn {
+            padding: 9px 14px;
+            border-radius: var(--radius-md);
+            border: none;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: background-color 0.2s ease, opacity 0.2s ease;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-primary {
+            background-color: var(--accent-blue);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background-color: var(--accent-blue-hover);
+        }
+
+        .btn-green {
+            background-color: var(--accent-green);
+            color: white;
+        }
+
+        .btn-green:hover:not(:disabled) {
+            background-color: var(--accent-green-hover);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+        }
+
+        .btn-outline:hover:not(:disabled) {
+            background: var(--bg-card-hover);
+            color: var(--text-primary);
+        }
+
+        /* Activity / Notice Banner */
+        .notice-banner {
+            font-size: 12px;
+            padding: 10px 12px;
+            border-radius: var(--radius-md);
+            border: 1px solid transparent;
+            display: none;
+        }
+
+        .notice-banner.info {
+            background: rgba(47, 129, 247, 0.12);
+            border-color: rgba(47, 129, 247, 0.3);
+            color: #79c0ff;
+        }
+
+        .notice-banner.success {
+            background: rgba(46, 160, 67, 0.15);
+            border-color: rgba(46, 160, 67, 0.3);
+            color: #56d364;
+        }
+
+        .notice-banner.error {
+            background: rgba(248, 81, 73, 0.15);
+            border-color: rgba(248, 81, 73, 0.3);
+            color: #ff7b72;
+        }
+
+        /* Recent Indexed List */
+        .indexed-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .indexed-item {
+            font-size: 12px;
+            padding: 8px 10px;
+            background: var(--bg-body);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .indexed-item .file-name {
+            font-weight: 500;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            max-width: 170px;
+        }
+
+        .indexed-item .chunk-badge {
+            font-size: 10px;
+            padding: 2px 6px;
+            background: var(--bg-card-hover);
+            border-radius: 10px;
+            color: var(--text-secondary);
+        }
+
+        /* Main Chat Container */
+        main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background-color: var(--bg-body);
+            overflow: hidden;
+        }
+
+        .chat-history {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        /* Chat Message Bubbles */
+        .message-row {
+            display: flex;
+            gap: 12px;
+            max-width: 85%;
+        }
+
+        .message-row.user {
+            margin-left: auto;
+            flex-direction: row-reverse;
+        }
+
+        .message-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+
+        .message-row.user .message-avatar {
+            background-color: var(--accent-blue);
+            color: white;
+        }
+
+        .message-row.ai .message-avatar {
+            background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue));
+            color: white;
+        }
+
+        .message-bubble {
+            background-color: var(--ai-bubble);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 14px 18px;
+            font-size: 14px;
+            line-height: 1.6;
+            color: var(--text-primary);
+            box-shadow: var(--shadow-subtle);
+        }
+
+        .message-row.user .message-bubble {
+            background-color: var(--user-bubble);
+            border-color: #2b5585;
+        }
+
+        /* Markdown formatting inside bubbles */
+        .message-bubble p {
+            margin-bottom: 10px;
+        }
+        .message-bubble p:last-child {
+            margin-bottom: 0;
+        }
+        .message-bubble ul, .message-bubble ol {
+            margin: 8px 0 8px 20px;
+        }
+        .message-bubble code {
+            background-color: rgba(110, 118, 129, 0.2);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .message-bubble pre {
+            background-color: #0d1117;
+            padding: 12px;
+            border-radius: var(--radius-md);
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+        .message-bubble pre code {
+            padding: 0;
+            background: none;
+        }
+        .message-bubble h1, .message-bubble h2, .message-bubble h3 {
+            margin-top: 12px;
+            margin-bottom: 6px;
+            font-weight: 600;
+        }
+        .message-bubble h2 {
+            font-size: 15px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 4px;
+        }
+
+        /* Sources Accordion */
+        .sources-container {
+            margin-top: 12px;
+            border-top: 1px solid var(--border-color);
+            padding-top: 8px;
+        }
+
+        .sources-toggle {
+            font-size: 11px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            user-select: none;
+        }
+
+        .sources-toggle:hover {
+            color: var(--accent-blue);
+        }
+
+        .sources-content {
+            margin-top: 6px;
+            display: none;
+            gap: 6px;
+            flex-direction: column;
+        }
+
+        .source-card {
+            background: rgba(0, 0, 0, 0.25);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 8px 10px;
+            font-size: 11px;
+            color: var(--text-secondary);
+        }
+
+        .source-header {
+            font-weight: 600;
+            color: #58a6ff;
+            margin-bottom: 4px;
+        }
+
+        /* Chat Input Area */
+        .chat-input-container {
+            background-color: var(--bg-card);
+            border-top: 1px solid var(--border-color);
+            padding: 16px 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+
+        .mode-indicator {
+            font-size: 11px;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .mode-indicator strong {
+            color: var(--accent-blue);
+        }
+
+        .input-row {
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+        }
+
+        .chat-textarea {
+            flex: 1;
+            background-color: var(--bg-body);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 14px;
+            padding: 12px 14px;
+            resize: none;
+            max-height: 140px;
+            outline: none;
+            transition: border-color 0.2s ease;
+        }
+
+        .chat-textarea:focus {
+            border-color: var(--border-highlight);
+        }
+
+        .send-btn {
+            height: 44px;
+            width: 44px;
+            padding: 0;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+
+        /* Typing spinner */
+        .typing-indicator {
+            display: flex;
+            gap: 4px;
+            align-items: center;
+            padding: 6px 0;
+        }
+
+        .typing-dot {
+            width: 6px;
+            height: 6px;
+            background-color: var(--text-muted);
+            border-radius: 50%;
+            animation: pulse 1.4s infinite ease-in-out both;
+        }
+
+        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+
+        @keyframes pulse {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header Navbar -->
+    <header>
+        <div class="brand-container">
+            <div class="brand-icon">🌲</div>
+            <div>
+                <div class="brand-title">Pinecone AI Assistant</div>
+                <div class="brand-subtitle" id="embeddingSubtitle">Offline ONNX Embeddings &bull; RAG &bull; Groq Chat</div>
+            </div>
+        </div>
+
+        <div class="header-status-group">
+            <div id="vectorDbBadge" class="status-badge" title="Vector Database connection status">
+                <span id="vectorDbDot" class="status-dot warn"></span>
+                <span id="vectorDbText">Checking Vector DB...</span>
+            </div>
+            <button class="btn btn-outline" style="padding: 5px 10px; font-size: 12px;" onclick="clearHistory()">Clear Chat</button>
+        </div>
+    </header>
+
+    <!-- Workspace -->
+    <div class="workspace-container">
+
+        <!-- Sidebar: Uploads & Mode Switcher -->
+        <aside>
+            <!-- Mode Selector -->
+            <div>
+                <div class="section-heading">Interaction Mode</div>
+                <div class="mode-selector">
+                    <div class="mode-option active" data-mode="rag" onclick="selectMode('rag')">
+                        <span class="icon">🧠</span>
+                        <div>
+                            <div>Ask PDF (RAG)</div>
+                            <small style="color:var(--text-muted); font-size:11px;">Search vector store</small>
+                        </div>
+                    </div>
+                    <div class="mode-option" data-mode="general" onclick="selectMode('general')">
+                        <span class="icon">💬</span>
+                        <div>
+                            <div>General Chat</div>
+                            <small style="color:var(--text-muted); font-size:11px;">Direct conversation</small>
+                        </div>
+                    </div>
+                    <div class="mode-option" data-mode="summarize" onclick="selectMode('summarize')">
+                        <span class="icon">📄</span>
+                        <div>
+                            <div>Summarize PDF</div>
+                            <small style="color:var(--text-muted); font-size:11px;">Executive breakdown</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PDF Upload Zone -->
+            <div>
+                <div class="section-heading">Document Knowledge Base</div>
+                <div class="upload-card" id="dropZone" onclick="document.getElementById('fileInput').click()">
+                    <div class="upload-icon">📂</div>
+                    <div class="upload-title">Drop PDF here or click to browse</div>
+                    <div class="upload-desc">Offline local embeddings (all-MiniLM-L6-v2)</div>
+                    <input type="file" id="fileInput" accept=".pdf" onchange="handleFileSelect(event)">
+                </div>
+
+                <div id="selectedFileBadge" class="selected-file-badge">
+                    <span id="selectedFileName" style="font-weight: 500;">document.pdf</span>
+                    <span id="selectedFileSize" style="color: var(--text-muted);">0 KB</span>
+                </div>
+
+                <div class="file-action-buttons">
+                    <button id="indexBtn" class="btn btn-primary" onclick="uploadAndIndexPdf()" disabled>
+                        <span>⚡ Index into Vector DB</span>
+                    </button>
+                    <button id="summarizeBtn" class="btn btn-green" onclick="summarizeUploadedPdf()" disabled>
+                        <span>📋 Summarize Document</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Status Notice -->
+            <div id="noticeBanner" class="notice-banner"></div>
+
+            <!-- Indexed Documents List -->
+            <div>
+                <div class="section-heading">Indexed In Vector DB</div>
+                <div id="indexedList" class="indexed-list">
+                    <div style="font-size:12px; color:var(--text-muted); font-style:italic;">No documents indexed yet in this session.</div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Chat Area -->
+        <main>
+            <div class="chat-history" id="chatHistory">
+                <!-- Welcome Message -->
+                <div class="message-row ai">
+                    <div class="message-avatar">AI</div>
+                    <div class="message-bubble">
+                        <p><strong>👋 Welcome to your Pinecone AI Knowledge Assistant!</strong></p>
+                        <p><strong>Highlights:</strong></p>
+                        <ul>
+                            <li><strong>100% Free Offline Embeddings:</strong> Powered locally by ONNX <code>all-MiniLM-L6-v2</code> &mdash; no OpenAI API key or fees required.</li>
+                            <li><strong>Upload a PDF</strong> to index it into your vector store for instant semantic RAG search.</li>
+                            <li><strong>Summarize PDF</strong> gives you an executive breakdown in seconds.</li>
+                            <li><strong>General Chat</strong> allows direct dialogue with Groq (<code>llama-3.3-70b-versatile</code>).</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chat Input Footer -->
+            <div class="chat-input-container">
+                <div class="mode-indicator">
+                    Active Mode: <strong id="activeModeLabel">Ask PDF (RAG via Vector DB)</strong>
+                </div>
+                <div class="input-row">
+                    <textarea id="messageInput" class="chat-textarea" rows="1" placeholder="Type your question here... (Enter to send, Shift+Enter for newline)"></textarea>
+                    <button id="sendBtn" class="btn btn-primary send-btn" onclick="sendMessage()">➤</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        let currentMode = 'rag'; // 'rag' | 'general' | 'summarize'
+        let selectedFile = null;
+
+        const textarea = document.getElementById('messageInput');
+        textarea.addEventListener('input', () => {
+            textarea.style.height = 'auto';
+            textarea.style.height = Math.min(textarea.scrollHeight, 140) + 'px';
+        });
+
+        textarea.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        window.addEventListener('DOMContentLoaded', () => {
+            checkSystemStatus();
+        });
+
+        async function checkSystemStatus() {
+            try {
+                const res = await fetch('/api/chat/status');
+                if (res.ok) {
+                    const data = await res.json();
+                    const badge = document.getElementById('vectorDbBadge');
+                    const dot = document.getElementById('vectorDbDot');
+                    const text = document.getElementById('vectorDbText');
+
+                    if (data.pineconeConnected) {
+                        dot.className = 'status-dot online';
+                        text.innerText = `Pinecone (${data.indexName || 'Connected'})`;
+                    } else {
+                        dot.className = 'status-dot warn';
+                        text.innerText = 'Local Vector Store (Offline)';
+                    }
+
+                    if (data.embeddingModel) {
+                        document.getElementById('embeddingSubtitle').innerText = `${data.embeddingModel} • Groq LLM`;
+                    }
+                }
+            } catch (err) {
+                console.warn('Status check failed:', err);
+            }
+        }
+
+        function selectMode(mode) {
+            currentMode = mode;
+            document.querySelectorAll('.mode-option').forEach(el => {
+                el.classList.toggle('active', el.getAttribute('data-mode') === mode);
+            });
+
+            const labels = {
+                'rag': 'Ask PDF (RAG via Vector DB)',
+                'general': 'General Chat',
+                'summarize': 'Summarize PDF'
+            };
+            document.getElementById('activeModeLabel').innerText = labels[mode];
+
+            if (mode === 'summarize' && selectedFile) {
+                summarizeUploadedPdf();
+            }
+        }
+
+        const dropZone = document.getElementById('dropZone');
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, (e) => {
+                e.preventDefault();
+                dropZone.classList.add('drag-over');
+            });
+        });
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, (e) => {
+                e.preventDefault();
+                dropZone.classList.remove('drag-over');
+            });
+        });
+        dropZone.addEventListener('drop', (e) => {
+            const files = e.dataTransfer.files;
+            if (files.length > 0 && files[0].type === 'application/pdf') {
+                setFile(files[0]);
+            } else {
+                showNotice('Please drop a valid PDF file.', 'error');
+            }
+        });
+
+        function handleFileSelect(e) {
+            if (e.target.files.length > 0) {
+                setFile(e.target.files[0]);
+            }
+        }
+
+        function setFile(file) {
+            selectedFile = file;
+            document.getElementById('selectedFileName').innerText = file.name;
+            document.getElementById('selectedFileSize').innerText = (file.size / 1024).toFixed(1) + ' KB';
+            const badge = document.getElementById('selectedFileBadge');
+            badge.style.display = 'flex';
+
+            document.getElementById('indexBtn').disabled = false;
+            document.getElementById('summarizeBtn').disabled = false;
+            showNotice(`Selected: ${file.name}`, 'info');
+        }
+
+        function showNotice(msg, type = 'info') {
+            const el = document.getElementById('noticeBanner');
+            el.className = `notice-banner ${type}`;
+            el.innerText = msg;
+            el.style.display = 'block';
+            setTimeout(() => {
+                if (el.innerText === msg) el.style.display = 'none';
+            }, 6000);
+        }
+
+        async function uploadAndIndexPdf() {
+            if (!selectedFile) return;
+
+            const btn = document.getElementById('indexBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<span>⏳ Indexing Chunks...</span>';
+            showNotice(`Parsing and embedding ${selectedFile.name} locally...`, 'info');
+
+            const formData = new FormData();
+            formData.append('file', selectedFile);
+
+            try {
+                const res = await fetch('/api/chat/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await res.json();
+
+                if (!res.ok) {
+                    throw new Error(data.error || 'Indexing failed');
+                }
+
+                showNotice(`Indexed ${data.chunkCount} chunks from ${data.pageCount} pages!`, 'success');
+                addIndexedItem(data.fileName, data.chunkCount);
+
+                appendMessage('ai', `✅ **PDF Indexed Successfully!**\n\n- File: \`${data.fileName}\`\n- Pages: **${data.pageCount}**\n- Vector chunks: **${data.chunkCount}**\n- Embeddings: **all-MiniLM-L6-v2 (Local ONNX, Offline)**\n\nYou can now ask questions about this document in **Ask PDF (RAG)** mode!`);
+                selectMode('rag');
+            } catch (err) {
+                showNotice(`Error: ${err.message}`, 'error');
+                appendMessage('ai', `❌ **Failed to index document:** ${err.message}`);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<span>⚡ Index into Vector DB</span>';
+            }
+        }
+
+        async function summarizeUploadedPdf() {
+            if (!selectedFile) {
+                showNotice('Please select a PDF file first.', 'error');
+                return;
+            }
+
+            const btn = document.getElementById('summarizeBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<span>⏳ Generating Summary...</span>';
+            showNotice(`Generating executive summary for ${selectedFile.name}...`, 'info');
+
+            appendMessage('user', `Please summarize: **${selectedFile.name}**`);
+            const loadingRow = appendLoading();
+
+            const formData = new FormData();
+            formData.append('file', selectedFile);
+
+            try {
+                const res = await fetch('/api/chat/summarize', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await res.json();
+
+                if (!res.ok) {
+                    throw new Error(data.error || 'Failed to summarize');
+                }
+
+                removeLoading(loadingRow);
+                appendMessage('ai', data.summary);
+                showNotice('Summary generated successfully!', 'success');
+            } catch (err) {
+                removeLoading(loadingRow);
+                appendMessage('ai', `❌ **Error creating summary:** ${err.message}`);
+                showNotice(err.message, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<span>📋 Summarize Document</span>';
+            }
+        }
+
+        async function sendMessage() {
+            const text = textarea.value.trim();
+            if (!text) return;
+
+            textarea.value = '';
+            textarea.style.height = 'auto';
+
+            appendMessage('user', text);
+            const loadingRow = appendLoading();
+
+            try {
+                if (currentMode === 'rag') {
+                    const res = await fetch('/api/chat/rag', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ message: text })
+                    });
+                    const data = await res.json();
+                    removeLoading(loadingRow);
+
+                    if (!res.ok) {
+                        appendMessage('ai', `❌ **Error:** ${data.error || 'Request failed'}`);
+                        return;
+                    }
+
+                    appendMessage('ai', data.answer, data.sources);
+                } else {
+                    const res = await fetch('/api/chat', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ message: text })
+                    });
+                    const data = await res.json();
+                    removeLoading(loadingRow);
+
+                    if (!res.ok) {
+                        appendMessage('ai', `❌ **Error:** ${data.error || 'Request failed'}`);
+                        return;
+                    }
+
+                    appendMessage('ai', data.response);
+                }
+            } catch (err) {
+                removeLoading(loadingRow);
+                appendMessage('ai', `❌ **Connection error:** ${err.message}`);
+            }
+        }
+
+        function appendMessage(sender, text, sources = null) {
+            const history = document.getElementById('chatHistory');
+            const row = document.createElement('div');
+            row.className = `message-row ${sender}`;
+
+            const avatar = document.createElement('div');
+            avatar.className = 'message-avatar';
+            avatar.innerText = sender === 'user' ? '👤' : 'AI';
+
+            const bubble = document.createElement('div');
+            bubble.className = 'message-bubble';
+
+            if (window.marked) {
+                bubble.innerHTML = marked.parse(text);
+            } else {
+                bubble.innerText = text;
+            }
+
+            if (sources && sources.length > 0) {
+                const sourcesContainer = document.createElement('div');
+                sourcesContainer.className = 'sources-container';
+
+                const toggle = document.createElement('div');
+                toggle.className = 'sources-toggle';
+                toggle.innerHTML = `📚 <strong>${sources.length} Context Sources</strong> &bull; Click to toggle`;
+
+                const content = document.createElement('div');
+                content.className = 'sources-content';
+
+                sources.forEach((s, idx) => {
+                    const sc = document.createElement('div');
+                    sc.className = 'source-card';
+                    sc.innerHTML = `
+                        <div class="source-header">[Source ${idx + 1}] ${escapeHtml(s.document)} (Page: ${s.page})</div>
+                        <div>${escapeHtml(s.snippet.slice(0, 220))}${s.snippet.length > 220 ? '...' : ''}</div>
+                    `;
+                    content.appendChild(sc);
+                });
+
+                toggle.onclick = () => {
+                    content.style.display = content.style.display === 'flex' ? 'none' : 'flex';
+                };
+
+                sourcesContainer.appendChild(toggle);
+                sourcesContainer.appendChild(content);
+                bubble.appendChild(sourcesContainer);
+            }
+
+            row.appendChild(avatar);
+            row.appendChild(bubble);
+            history.appendChild(row);
+            history.scrollTop = history.scrollHeight;
+        }
+
+        function appendLoading() {
+            const history = document.getElementById('chatHistory');
+            const row = document.createElement('div');
+            row.className = 'message-row ai';
+            row.innerHTML = `
+                <div class="message-avatar">AI</div>
+                <div class="message-bubble">
+                    <div class="typing-indicator">
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                    </div>
+                </div>
+            `;
+            history.appendChild(row);
+            history.scrollTop = history.scrollHeight;
+            return row;
+        }
+
+        function removeLoading(row) {
+            if (row && row.parentNode) {
+                row.parentNode.removeChild(row);
+            }
+        }
+
+        function addIndexedItem(fileName, chunks) {
+            const list = document.getElementById('indexedList');
+            if (list.querySelector('div[style*="font-style:italic"]')) {
+                list.innerHTML = '';
+            }
+
+            const item = document.createElement('div');
+            item.className = 'indexed-item';
+            item.innerHTML = `
+                <span class="file-name" title="${escapeHtml(fileName)}">📄 ${escapeHtml(fileName)}</span>
+                <span class="chunk-badge">${chunks} chunks</span>
+            `;
+            list.prepend(item);
+        }
+
+        function clearHistory() {
+            const history = document.getElementById('chatHistory');
+            history.innerHTML = `
+                <div class="message-row ai">
+                    <div class="message-avatar">AI</div>
+                    <div class="message-bubble">
+                        <p>Chat history cleared. How can I help you today?</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+    </script>
+</body>
+</html>
