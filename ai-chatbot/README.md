@@ -1,72 +1,68 @@
 # 🌲 AI Chatbot, PDF Knowledge Assistant & Live Weather Intelligence
 
-A production-ready, full-stack AI assistant built with **Spring Boot 4.1.1** and **Spring AI 2.0.1**, architected strictly according to enterprise **MVC (Model - View - Controller - DTO - Entity)** design principles.
+A modern, production-ready, full-stack AI platform built with **Spring Boot 4.1.1** and **Spring AI 2.0.1**, architected cleanly according to **MVC (Model - View - Controller - DTO - Entity)** software engineering principles.
 
-The application combines **Retrieval-Augmented Generation (RAG)** over PDF documents, **100% free offline local ONNX vector embeddings**, **Groq LPU ultra-fast inference**, **real-time 3rd-party Weather API integration** (WeatherAPI.com with automated Open-Meteo fallback), and **Spring Data JPA persistence with an in-memory H2 database**.
-
----
-
-## 🌟 Key Capabilities
-
-- **🌤️ Live 3rd-Party Weather API Integration:**
-  - Real-time weather lookup for any city worldwide using **WeatherAPI.com** with automated zero-config fallback to **Open-Meteo**.
-  - Fetches temperature (°C and °F), meteorological conditions, icons, humidity, wind speed, and feels-like temperatures.
-  - Conversational AI weather analysis (e.g., *"What should I wear in Tokyo today?"*).
-- **💾 JPA Entity Persistence & H2 In-Memory Database:**
-  - Every weather query and AI interaction is stored in an H2 relational table (`weather_logs`) using standard JPA `@Entity` mapping.
-  - Built-in in-browser database inspection console available at `/h2-console`.
-- **🧠 Retrieval-Augmented Generation (RAG):**
-  - Semantic vector similarity search over user-uploaded PDF documents stored in **Pinecone Serverless**.
-  - Automatic fallback to an in-memory vector store when Pinecone credentials are not configured.
-  - Contextual citations and references displaying exact source document names and page numbers.
-- **⚡ 100% Free & Offline Local Embeddings:**
-  - Powered locally by **Microsoft ONNX Runtime** and `all-MiniLM-L6-v2` (384 dimensions).
-  - Runs directly on CPU/GPU — **zero OpenAI API cost** and no data leaks for embedding generation.
-- **📄 High-Speed PDF Ingestion & Summarization:**
-  - Apache PDFBox document parsing with token chunking via Spring AI `TokenTextSplitter`.
-  - Executive structured Markdown summaries generated directly from raw PDF uploads.
-- **💬 Ultra-Fast Conversational LLM via Groq:**
-  - OpenAI-compatible chat client leveraging Groq LPU inference for high-token throughput with low latency.
-  - Live weather tool intelligence embedded directly into general chat queries.
-- **🎨 Modern Interactive Web UI (View Layer):**
-  - Single-page application served directly from Spring Boot (`/`).
-  - Interactive mode switching: **Live Weather**, **Ask PDF (RAG)**, **General Chat**, and **Summarize PDF**.
+The platform provides an end-to-end AI experience:
+- **Retrieval-Augmented Generation (RAG)** over PDF documents.
+- **100% Free & Offline Vector Embeddings** using Microsoft ONNX Runtime (`all-MiniLM-L6-v2`, 384 dimensions).
+- **Groq LPU Ultra-Fast Inference** (OpenAI-compatible client with `openai/gpt-oss-120b`).
+- **Live 3rd-Party Weather API Integration** (Open-Meteo & WeatherAPI.com).
+- **Relational Persistence** via Spring Data JPA and an in-memory **H2 Database** (`weather_logs` table).
+- **Single-Page Interactive Dashboard** with live weather cards, PDF drag-and-drop, and citations.
 
 ---
 
-## 🏛️ MVC Architecture & Design Pattern
+## 🌟 Key Features
 
-The codebase adheres strictly to standard Spring Boot MVC layer separation:
+| Feature | Description |
+| :--- | :--- |
+| **🌤️ Live Weather (3rd-Party APIs)** | Real-time global weather fetching using **Open-Meteo** (100% free, zero-config, no key required) and **WeatherAPI.com** fallback/primary. |
+| **💾 JPA Entity Persistence (H2)** | Tracks user weather inquiries and AI responses in an in-memory SQL database with an integrated web inspection console at `/h2-console`. |
+| **🧠 PDF Document RAG** | Ingests PDF files, performs layout-aware text splitting via Apache PDFBox & `TokenTextSplitter`, stores embeddings in **Pinecone** (or in-memory fallback), and returns cited answers. |
+| **⚡ Zero-Cost Local Embeddings** | Generates 384-dimensional dense vectors locally with **Microsoft ONNX Runtime** (`all-MiniLM-L6-v2`). No token fees or OpenAI API costs for embeddings! |
+| **📄 Executive PDF Summarization** | Automatically summarizes lengthy documents into structured Markdown: Executive Summary, Key Highlights, Detailed Insights, and Conclusions. |
+| **💬 Groq LPU Chat Engine** | High-throughput, low-latency conversational AI with built-in weather tool intelligence. |
+| **🎨 Modern Responsive View (UI)** | Single-page HTML5/CSS3/Vanilla JS UI with interactive mode switching (**Live Weather**, **Ask PDF (RAG)**, **General Chat**, **Summarize PDF**), drag & drop file uploads, collapsible sources, and responsive mobile/tablet layout. |
+
+---
+
+## 🏛️ MVC Architecture & Layer Organization
+
+The application strictly separates responsibilities into standard enterprise Spring Boot layers:
 
 ```
-com.spring.ai_chatbot
-├── AiChatbotApplication.java            # Main Spring Boot bootstrap entry point
-├── config/                             # Infrastructure & Bean configurations
-│   └── VectorStoreConfig.java          # ONNX Embeddings & Pinecone / SimpleVectorStore setup
-├── entity/                             # [MODEL / ENTITY] Persistent JPA database entities
-│   └── WeatherLogEntity.java           # @Entity mapped to 'weather_logs' in H2 database
-├── repository/                         # [REPOSITORY] Spring Data JPA data access interfaces
-│   └── WeatherLogRepository.java       # JpaRepository queries for recent lookups
-├── dto/                                # [DTO] Data Transfer Objects (Request / Response)
+src/main/java/com/spring/ai_chatbot/
+├── AiChatbotApplication.java            # Spring Boot application bootstrap entry point
+├── config/                             # Infrastructure beans & servlet mappings
+│   ├── VectorStoreConfig.java          # ONNX Embeddings & Pinecone / SimpleVectorStore setup
+│   └── H2ConsoleConfig.java            # H2 JakartaWebServlet mapping for /h2-console/*
+├── entity/                             # [MODEL / ENTITY] Persistent database domain objects
+│   └── WeatherLogEntity.java           # JPA @Entity mapped to 'weather_logs' table in H2
+├── repository/                         # [REPOSITORY] Data Access Layer (Spring Data JPA)
+│   └── WeatherLogRepository.java       # Custom finder methods & standard CRUD operations
+├── dto/                                # [DTO] Data Transfer Objects (Decoupled API contracts)
 │   ├── request/
-│   │   ├── ChatRequestDTO.java         # Validated chat prompt payload (@NotBlank)
-│   │   └── WeatherRequestDTO.java      # Validated weather query payload (@NotBlank)
+│   │   ├── ChatRequestDTO.java         # Validated user chat input (@NotBlank)
+│   │   └── WeatherRequestDTO.java      # Validated city & question payload (@NotBlank)
 │   └── response/
-│       ├── ChatResponseDTO.java        # Standard LLM response
+│       ├── ChatResponseDTO.java        # Standard LLM response container
 │       ├── WeatherResponseDTO.java     # Live meteorological data + AI advice
-│       ├── RagResponseDTO.java          # Cited RAG response with source references
-│       ├── SourceInfoDTO.java          # Document citation metadata (page & snippet)
-│       ├── PdfIndexResultDTO.java      # Ingestion result with page/chunk counts
-│       ├── PdfSummaryResultDTO.java    # Structured document executive summary
-│       └── SystemStatusDTO.java        # Live engine & vector store health status
-├── service/                            # [SERVICE] Business logic & external service clients
-│   ├── WeatherService.java             # WeatherAPI.com + Open-Meteo REST client & H2 logger
-│   └── ChatService.java               # Groq LLM orchestration, RAG search & PDF parsing
-├── controller/                         # [CONTROLLER] REST API endpoints & request mapping
-│   ├── WeatherController.java          # /api/weather/* endpoints
-│   └── ChatController.java             # /api/chat/* endpoints
-└── view/ (src/main/resources/static/)  # [VIEW] Client presentation layer
-    └── index.html                      # Single-page responsive interactive web app
+│       ├── RagResponseDTO.java          # Grounded response with document citations
+│       ├── SourceInfoDTO.java          # Source filename, page number, and snippet
+│       ├── PdfIndexResultDTO.java      # Upload metadata (page count, chunk count)
+│       ├── PdfSummaryResultDTO.java    # Executive markdown summary
+│       └── SystemStatusDTO.java        # System health & active vector store info
+├── service/                            # [SERVICE] Business logic & external API orchestrators
+│   ├── WeatherService.java             # WeatherAPI.com + Open-Meteo REST client & JPA logging
+│   └── ChatService.java               # Groq LLM client, RAG vector search, and token chunking
+└── controller/                         # [CONTROLLER] REST API HTTP Endpoints
+    ├── WeatherController.java          # /api/weather, /api/weather/ask, /api/weather/history
+    └── ChatController.java             # /api/chat, /api/chat/rag, /api/chat/upload, /api/chat/summarize
+
+src/main/resources/
+├── application.properties               # Environment variable bindings, H2 & logging configs
+└── static/
+    └── index.html                      # [VIEW] Responsive Single-Page Interface
 ```
 
 ---
@@ -77,56 +73,56 @@ com.spring.ai_chatbot
 flowchart TD
     User([User / Web Browser])
 
-    subgraph View ["VIEW LAYER (HTML5 / CSS3 / Vanilla JS)"]
-        UI["Interactive Dashboard (http://localhost:8080)<br/>• Live Weather Cards & City Quick Chips<br/>• Ask PDF (RAG) & Document Upload<br/>• General Chat & Executive Summarizer"]
+    subgraph ViewLayer ["VIEW LAYER (HTML5 / CSS3 / Vanilla JS)"]
+        UI["Modern Dashboard (http://localhost:8080)<br/>• 🌤️ Live Weather Interactive Card & Quick Chips<br/>• 🧠 PDF Upload, Drag-and-Drop, & RAG Search<br/>• 💬 General Chat & Document Summarizer"]
     end
 
-    subgraph Controller ["CONTROLLER LAYER (Spring MVC REST)"]
-        WeatherCtrl["WeatherController<br/>(/api/weather)"]
-        ChatCtrl["ChatController<br/>(/api/chat)"]
+    subgraph ControllerLayer ["CONTROLLER LAYER (Spring MVC REST)"]
+        WeatherCtrl["WeatherController<br/>(/api/weather/*)"]
+        ChatCtrl["ChatController<br/>(/api/chat/*)"]
     end
 
-    subgraph DTO ["DTO LAYER (Data Transfer Objects)"]
+    subgraph DTOLayer ["DTO LAYER (Input Validation & API Contracts)"]
         ReqDTO["Request DTOs<br/>(WeatherRequestDTO, ChatRequestDTO)"]
-        ResDTO["Response DTOs<br/>(WeatherResponseDTO, RagResponseDTO, etc.)"]
+        ResDTO["Response DTOs<br/>(WeatherResponseDTO, RagResponseDTO, PdfSummaryResultDTO)"]
     end
 
-    subgraph Service ["SERVICE LAYER (Business Logic)"]
+    subgraph ServiceLayer ["SERVICE LAYER (Core Business Logic)"]
         WeatherSvc["WeatherService<br/>(RestClient HTTP client)"]
         ChatSvc["ChatService<br/>(Spring AI ChatClient)"]
     end
 
-    subgraph EntityRepo ["ENTITY & REPOSITORY LAYER (Spring Data JPA)"]
+    subgraph DataLayer ["PERSISTENCE LAYER (Spring Data JPA & H2)"]
         WeatherRepo["WeatherLogRepository"]
-        WeatherEntity[("WeatherLogEntity<br/>@Table(weather_logs)")]
-        H2DB[("H2 In-Memory DB<br/>(jdbc:h2:mem:chatbotdb)")]
+        WeatherEntity[("WeatherLogEntity<br/>@Entity / @Table(weather_logs)")]
+        H2DB[("H2 In-Memory Database<br/>(jdbc:h2:mem:chatbotdb)")]
     end
 
-    subgraph ExternalAPIs ["EXTERNAL 3RD-PARTY APIS"]
-        WeatherAPI["WeatherAPI.com<br/>(Primary Live Weather)"]
-        OpenMeteo["Open-Meteo API<br/>(Zero-Key Fallback)"]
+    subgraph ExternalAPIs ["EXTERNAL SERVICES"]
+        OpenMeteo["Open-Meteo API<br/>(100% Free, Zero-Key Live Weather)"]
+        WeatherAPI["WeatherAPI.com<br/>(Optional via WEATHER_API_KEY)"]
         Groq["Groq Cloud LPU<br/>(openai/gpt-oss-120b)"]
     end
 
-    subgraph VectorEngine ["LOCAL EMBEDDINGS & VECTOR STORE"]
+    subgraph LocalEmbeddings ["OFFLINE LOCAL VECTOR EMBEDDINGS"]
         PDFReader["Apache PDFBox Reader"]
-        Chunker["TokenTextSplitter"]
+        Chunker["TokenTextSplitter (Spring AI)"]
         Embedder["Local ONNX Embedder<br/>(all-MiniLM-L6-v2 / 384 dims)"]
         Pinecone[("Pinecone Serverless Index")]
-        SimpleStore[("In-Memory SimpleVectorStore<br/>(Local Fallback)")]
+        SimpleStore[("SimpleVectorStore<br/>(Automatic Local Fallback)")]
     end
 
     User <--> UI
-    UI <--> Controller
-    Controller <--> DTO
-    Controller <--> Service
+    UI <--> ControllerLayer
+    ControllerLayer <--> DTOLayer
+    ControllerLayer <--> ServiceLayer
 
     WeatherSvc --> WeatherRepo
     WeatherRepo --> WeatherEntity
     WeatherEntity --> H2DB
 
-    WeatherSvc --> WeatherAPI
-    WeatherAPI -. Fallback .-> OpenMeteo
+    WeatherSvc --> OpenMeteo
+    WeatherSvc -. Fallback/Primary .-> WeatherAPI
     WeatherSvc --> Groq
 
     ChatSvc --> Groq
@@ -139,33 +135,33 @@ flowchart TD
 
 ---
 
-## 📋 Technology Stack
+## 💻 Technology Stack
 
-| Component | Technology | Version | Description |
+| Layer | Technology | Version | Description |
 | :--- | :--- | :--- | :--- |
-| **Framework** | Spring Boot | `4.1.1` | Core Java microservice framework |
-| **AI Orchestration** | Spring AI | `2.0.1` | ChatClient, Prompt templates, and Vector store |
-| **Relational Database** | H2 Database | In-Memory | Embedded fast SQL database for weather & chat logs |
-| **Persistence (ORM)** | Spring Data JPA / Hibernate | 6.x | Entity mapping and repository management |
-| **Vector Database** | Pinecone | Serverless | Cloud-native vector similarity search |
-| **Embedding Engine** | Microsoft ONNX Runtime | `all-MiniLM-L6-v2` | 384-dimension free offline local embeddings |
-| **LLM Inference** | Groq Cloud LPU | `openai/gpt-oss-120b` | High-speed conversational reasoning |
-| **3rd-Party Weather API** | WeatherAPI.com & Open-Meteo | v1 | Live global weather data feeds |
-| **Document Parser** | Apache PDFBox | `3.0.7` | High-fidelity PDF layout and text extraction |
-| **HTTP Client** | Spring Framework `RestClient` | 6.x | Synchronous HTTP client with connection pooling |
-| **Runtime** | Java JDK | `17` | Recommended LTS JDK |
+| **Framework** | Spring Boot | `4.1.1` | Core microservice framework |
+| **AI Orchestration** | Spring AI | `2.0.1` | Prompt management, `ChatClient`, and Vector store interfaces |
+| **Database** | H2 Database | `2.4.240` | In-memory relational database for query audit logs |
+| **ORM / Persistence** | Spring Data JPA / Hibernate | 6.x | Entity mapping and automated repository queries |
+| **Vector DB** | Pinecone | Serverless | Cloud vector database for semantic similarity search |
+| **Embedding Model** | Microsoft ONNX Runtime | `1.21.1` | Local `all-MiniLM-L6-v2` (384 dims, 100% offline & free) |
+| **LLM Inference** | Groq Cloud LPU | `openai/gpt-oss-120b` | High-token throughput conversational engine |
+| **Document Reader** | Apache PDFBox | `3.0.7` | High-fidelity PDF layout and text extraction |
+| **Weather Feed** | Open-Meteo & WeatherAPI.com | v1 | Public REST live meteorological feeds |
+| **Java Runtime** | Eclipse Adoptium OpenJDK | `17 (LTS)` | Recommended runtime |
+| **Frontend** | HTML5 / CSS3 / Vanilla JS | - | Single-page zero-dependency responsive interface |
 
 ---
 
 ## 📡 REST API Reference
 
-### 1. Live Weather API Endpoints
+### 1. Weather API Endpoints (`/api/weather`)
 
-#### • Get Current Weather for a City
-Fetches real-time weather, persists the query to the H2 database, and returns structured data.
-- **Endpoint:** `GET /api/weather?city={city}`
-- **Example:** `GET /api/weather?city=Tokyo`
-- **Sample Response:**
+#### • Get Real-Time Weather
+Fetches live conditions for a specified city and persists the record to the H2 database.
+- **Method & URL:** `GET /api/weather?city={cityName}`
+- **Sample Request:** `GET /api/weather?city=Tokyo`
+- **Sample Response (200 OK):**
   ```json
   {
     "city": "Tokyo",
@@ -179,24 +175,24 @@ Fetches real-time weather, persists the query to the H2 database, and returns st
     "windKph": 12.6,
     "feelsLikeC": 18.0,
     "uvIndex": 3.0,
-    "provider": "WeatherAPI.com",
-    "lastUpdated": "2026-10-19 16:30",
+    "provider": "Open-Meteo (Live API)",
+    "lastUpdated": "2026-10-21 00:15",
     "aiCommentary": null
   }
   ```
 
 #### • Ask AI About Live Weather
-Queries live weather and generates Groq LLM commentary tailored to the user's specific scenario.
-- **Endpoint:** `POST /api/weather/ask`
+Fetches real-time weather and generates personalized AI recommendations via Groq.
+- **Method & URL:** `POST /api/weather/ask`
 - **Headers:** `Content-Type: application/json`
 - **Request Body:**
   ```json
   {
     "city": "London",
-    "question": "Should I carry an umbrella and a heavy coat today?"
+    "question": "What should I wear for a walking tour today?"
   }
   ```
-- **Sample Response:**
+- **Sample Response (200 OK):**
   ```json
   {
     "city": "London",
@@ -204,87 +200,64 @@ Queries live weather and generates Groq LLM commentary tailored to the user's sp
     "temperatureC": 12.0,
     "temperatureF": 53.6,
     "conditionText": "Light rain",
-    "humidity": 85,
-    "windKph": 20.5,
-    "provider": "WeatherAPI.com",
-    "aiCommentary": "Yes, definitely bring an umbrella! Current conditions show light rain with 85% humidity. While a heavy winter coat isn't necessary at 12°C, a waterproof jacket or trench coat is strongly recommended due to 20 km/h winds."
+    "humidity": 82,
+    "windKph": 19.5,
+    "provider": "Open-Meteo (Live API)",
+    "aiCommentary": "Expect damp conditions with light rain and 12°C. A waterproof jacket with a hood, water-resistant walking shoes, and an umbrella are strongly recommended."
   }
   ```
 
-#### • Get Weather Query History (H2 Database)
-Returns the most recent weather queries persisted in the `WeatherLogEntity` table.
-- **Endpoint:** `GET /api/weather/history`
-- **Sample Response:**
-  ```json
-  [
-    {
-      "id": 1,
-      "city": "Tokyo",
-      "country": "Japan",
-      "temperatureC": 18.5,
-      "conditionText": "Partly cloudy",
-      "provider": "WeatherAPI.com",
-      "queryTimestamp": "2026-10-19T17:28:40"
-    }
-  ]
-  ```
-
-#### • H2 In-Memory Database Web Console
-- **URL:** `http://localhost:8080/h2-console`
-- **JDBC URL:** `jdbc:h2:mem:chatbotdb`
-- **User Name:** `sa`
-- **Password:** *(leave blank)*
+#### • Weather Query History (H2 Database)
+Returns the last 15 weather searches persisted in the database.
+- **Method & URL:** `GET /api/weather/history`
 
 ---
 
-### 2. Chat & PDF Document Endpoints
+### 2. Chat & PDF Endpoints (`/api/chat`)
 
-#### • General Chat (with Live Weather Tool Detection)
-- **Endpoint:** `POST /api/chat`
+#### • General Chat
+Direct conversational chat powered by Groq with automatic weather query detection.
+- **Method & URL:** `POST /api/chat`
 - **Request Body:**
   ```json
   {
-    "message": "What is the weather in Paris right now?"
-  }
-  ```
-- **Response:**
-  ```json
-  {
-    "response": "According to live weather data from Paris, France, it is currently 16.0°C (60.8°F) with clear skies, 52% humidity, and a light breeze of 8.0 km/h."
+    "message": "Explain microservices architecture in 3 simple bullets."
   }
   ```
 
-#### • Upload & Index PDF into Vector Store
-- **Endpoint:** `POST /api/chat/upload`
+#### • Upload & Index PDF (RAG Pipeline)
+Extracts PDF text, chunks tokens, generates local ONNX embeddings, and indexes them into Pinecone.
+- **Method & URL:** `POST /api/chat/upload`
 - **Headers:** `Content-Type: multipart/form-data`
-- **Form Data:** `file`: `[binary PDF]`
-- **Response:**
+- **Form Param:** `file`: `[binary PDF]`
+- **Sample Response (200 OK):**
   ```json
   {
-    "fileName": "report.pdf",
-    "pageCount": 4,
-    "chunkCount": 12,
-    "message": "Successfully parsed 4 pages and stored 12 vector chunks into Pinecone Vector DB using free offline embeddings."
+    "fileName": "financial_report.pdf",
+    "pageCount": 5,
+    "chunkCount": 16,
+    "message": "Successfully parsed 5 pages and stored 16 vector chunks into Pinecone Vector DB using free offline embeddings."
   }
   ```
 
 #### • Ask Grounded Questions (RAG Search)
-- **Endpoint:** `POST /api/chat/rag`
+Performs cosine similarity search over vector store and generates an answer citing sources and pages.
+- **Method & URL:** `POST /api/chat/rag`
 - **Request Body:**
   ```json
   {
-    "message": "What were the total expenses mentioned in the report?"
+    "message": "What were the quarterly revenue numbers?"
   }
   ```
-- **Response:**
+- **Sample Response (200 OK):**
   ```json
   {
-    "answer": "Total operating expenses for Q3 reached $1.8M [Source 1: report.pdf, Page: 3].",
+    "answer": "According to the financial report, Q3 revenue reached $4.2M [Source 1: financial_report.pdf, Page: 2].",
     "sources": [
       {
-        "document": "report.pdf",
-        "page": "3",
-        "snippet": "...operating expenses for the third quarter totaled $1.8 million..."
+        "document": "financial_report.pdf",
+        "page": "2",
+        "snippet": "...Q3 revenue totaled $4.2 million, representing an 18% increase year-over-year..."
       }
     ],
     "contextFound": true
@@ -292,83 +265,99 @@ Returns the most recent weather queries persisted in the `WeatherLogEntity` tabl
   ```
 
 #### • Direct PDF Summarization
-- **Endpoint:** `POST /api/chat/summarize`
+Generates an executive, structured Markdown summary directly from an uploaded document.
+- **Method & URL:** `POST /api/chat/summarize`
 - **Headers:** `Content-Type: multipart/form-data`
-- **Form Data:** `file`: `[binary PDF]`
+- **Form Param:** `file`: `[binary PDF]`
 
-#### • Engine & Vector Store Health Check
-- **Endpoint:** `GET /api/chat/status`
-
----
-
-## ⚙️ Environment Variables Reference
-
-API keys and secrets are loaded securely from environment variables, preventing secret leakage in version control:
-
-| Variable Name | Description | Default / Fallback |
-| :--- | :--- | :--- |
-| `GROQ_API_KEY` | Secret API key for Groq Cloud inference | *(Required for chat / LLM)* |
-| `WEATHER_API_KEY` | Secret API key for WeatherAPI.com | *(Optional; automatically falls back to Open-Meteo)* |
-| `PINECONE_API_KEY` | Secret API key for Pinecone vector store | *(Optional; falls back to in-memory store)* |
-| `PINECONE_INDEX_NAME` | Pinecone Serverless index name | `ai-chatbot` |
-| `PINECONE_ENVIRONMENT` | Pinecone cloud region | `gcp-starter` |
-| `SERVER_PORT` | HTTP port on which the web server listens | `8080` |
+#### • System Health & Vector Store Status
+- **Method & URL:** `GET /api/chat/status`
 
 ---
 
-## 🚀 Getting Started & Local Setup
+### 3. H2 Database Console
+The in-browser H2 SQL inspection console is accessible at:
+- **URL:** [http://localhost:8080/h2-console](http://localhost:8080/h2-console)
+- **Saved Settings:** `Generic H2 (Embedded)`
+- **Driver Class:** `org.h2.Driver`
+- **JDBC URL:** `jdbc:h2:mem:chatbotdb`
+- **User Name:** `sa`
+- **Password:** *(leave empty)*
+
+---
+
+## 🔐 Environment Variables & Security
+
+To maintain security, **no API keys or credentials are hardcoded into version control**. Spring Boot dynamically resolves keys from your environment:
+
+| Variable Name | Required? | Description | Default Fallback |
+| :--- | :---: | :--- | :--- |
+| `GROQ_API_KEY` | **Yes** | Secret API key for Groq Cloud LLM | *(None &mdash; required for chat)* |
+| `WEATHER_API_KEY` | No | WeatherAPI.com secret key | Defaults to **Open-Meteo** (no key needed) |
+| `PINECONE_API_KEY` | No | Secret API key for Pinecone | Defaults to in-memory `SimpleVectorStore` |
+| `PINECONE_INDEX_NAME`| No | Pinecone Serverless index name | `ai-chatbot` |
+| `PINECONE_ENVIRONMENT`| No | Pinecone Cloud region | `gcp-starter` |
+| `SERVER_PORT` | No | Embedded web server port | `8080` |
+
+---
+
+## 🚀 Quickstart Guide
 
 ### 1. Prerequisites
-- **Java JDK 17** (e.g. Eclipse Adoptium Temurin 17 or OpenJDK 17).
-- **Apache Maven 3.8+**.
-- **Free Groq API Key**: Obtain from [console.groq.com/keys](https://console.groq.com/keys).
-- **Free WeatherAPI.com Key (Optional)**: Obtain from [weatherapi.com](https://www.weatherapi.com/).
+- **Java 17 JDK** (`java -version`)
+- **Apache Maven 3.8+** (`mvn -version`)
+- **Groq API Key**: Create a free API key at [console.groq.com/keys](https://console.groq.com/keys)
 
-### 2. Configure Environment Variables in IntelliJ IDEA
-1. Open IntelliJ IDEA and load the project.
-2. In the top-right toolbar, click the Run Configuration dropdown next to the Green Run button ➔ **Edit Configurations...**
+### 2. Configure Environment in IntelliJ IDEA
+1. Open the project in IntelliJ IDEA.
+2. In the top-right toolbar, click the dropdown next to the Green Play button ➔ **Edit Configurations...**
 3. Select **AiChatbotApplication**.
-4. In the **Environment variables** field, enter:
+4. In **Environment variables**, paste:
    ```text
-   GROQ_API_KEY=gsk_your_groq_key_here;WEATHER_API_KEY=your_weatherapi_key_here
+   GROQ_API_KEY=gsk_your_groq_api_key_here
    ```
+   *(Optionally add `WEATHER_API_KEY=your_key` or `PINECONE_API_KEY=your_key`)*.
 5. Click **Apply** and **OK**.
 
-### 3. Build & Run from Terminal
-Alternatively, set the variables in PowerShell / Bash and launch:
+### 3. Run the Application
+Run via IntelliJ **Run ▶️** button, or execute from your terminal:
 
 ```powershell
 # Windows PowerShell
-$env:GROQ_API_KEY="gsk_your_groq_key"
-$env:WEATHER_API_KEY="your_weather_key"
-
+$env:GROQ_API_KEY="gsk_your_groq_api_key_here"
 mvn clean package -DskipTests
 mvn spring-boot:run
 ```
 
 ```bash
 # macOS / Linux
-export GROQ_API_KEY="gsk_your_groq_key"
-export WEATHER_API_KEY="your_weather_key"
-
+export GROQ_API_KEY="gsk_your_groq_api_key_here"
 mvn clean package -DskipTests
 mvn spring-boot:run
 ```
 
-### 4. Access the Application
+### 4. Open the Web Application
 Open your browser and navigate to:
-- **Interactive Web Dashboard:** [http://localhost:8080](http://localhost:8080)
+- **Interactive UI Dashboard:** [http://localhost:8080](http://localhost:8080)
 - **H2 Database Console:** [http://localhost:8080/h2-console](http://localhost:8080/h2-console)
 
 ---
 
-## 🛡️ Security Best Practices
+## 🛠️ Troubleshooting & FAQ
 
-- `src/main/resources/application.properties` does **NOT** contain hardcoded secrets. It resolves properties dynamically from `${GROQ_API_KEY:}` and `${WEATHER_API_KEY:}`.
-- Git commits will never expose your API keys.
-- H2 database runs safely in memory and does not write unencrypted sensitive tokens to disk.
+### 1. `Whitelabel Error 404: No static resource h2-console`
+- **Cause:** Spring Boot 4 requires explicit servlet registration for H2's `JakartaWebServlet`.
+- **Solution:** Handled automatically via [`H2ConsoleConfig.java`](file:///D:/ChatBot/ai-chatbot/src/main/java/com/spring/ai_chatbot/config/H2ConsoleConfig.java). Make sure to access `http://localhost:8080/h2-console` after restarting the application.
+
+### 2. `Groq API Key was NOT detected`
+- Verify that your variable name in IntelliJ is spelled **`GROQ_API_KEY`**.
+- Remember to **Stop ⏹️** and **Restart ▶️** the app after adding environment variables in IntelliJ.
+
+### 3. `DLL initialization routine failed` (Windows ONNX runtime)
+- Ensure you run on **Java 17 LTS**.
+- Install the [Microsoft Visual C++ Redistributable (x64)](https://aka.ms/vs/17/release/vc_redist.x64.exe) if running on Windows.
 
 ---
 
-## 📄 License
-This project is licensed under the Apache 2.0 License.
+## 📜 License
+This project is open-source and licensed under the [Apache License 2.0](LICENSE).
