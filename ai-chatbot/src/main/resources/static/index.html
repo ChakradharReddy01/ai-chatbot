@@ -26,6 +26,7 @@
             --accent-green-hover: #2ea043;
             --accent-purple: #8957e5;
             --accent-orange: #d29922;
+            --accent-cyan: #39c5cf;
             --user-bubble: #1f3a5f;
             --ai-bubble: #21262d;
             --radius-md: 8px;
@@ -53,11 +54,13 @@
         header {
             background-color: var(--bg-card);
             border-bottom: 1px solid var(--border-color);
-            padding: 12px 24px;
+            padding: 12px 20px;
             display: flex;
             align-items: center;
             justify-content: space-between;
             flex-shrink: 0;
+            gap: 12px;
+            flex-wrap: wrap;
         }
 
         .brand-container {
@@ -75,6 +78,7 @@
             align-items: center;
             justify-content: center;
             font-size: 18px;
+            flex-shrink: 0;
         }
 
         .brand-title {
@@ -91,7 +95,8 @@
         .header-status-group {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
+            flex-wrap: wrap;
         }
 
         .status-badge {
@@ -127,19 +132,21 @@
             display: flex;
             flex: 1;
             overflow: hidden;
+            position: relative;
         }
 
         /* Sidebar: Document & Mode Controls */
         aside {
-            width: 340px;
+            width: 360px;
             background-color: var(--bg-card);
             border-right: 1px solid var(--border-color);
-            padding: 20px;
+            padding: 16px;
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            gap: 16px;
             overflow-y: auto;
             flex-shrink: 0;
+            transition: all 0.3s ease;
         }
 
         .section-heading {
@@ -159,7 +166,7 @@
         }
 
         .mode-option {
-            padding: 10px 14px;
+            padding: 10px 12px;
             border-radius: var(--radius-md);
             border: 1px solid var(--border-color);
             background: var(--bg-body);
@@ -171,6 +178,7 @@
             font-size: 13px;
             font-weight: 500;
             transition: all 0.2s ease;
+            user-select: none;
         }
 
         .mode-option:hover {
@@ -188,12 +196,123 @@
             font-size: 16px;
         }
 
+        /* Weather Interactive Panel */
+        .weather-panel {
+            background: var(--bg-body);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .weather-search-row {
+            display: flex;
+            gap: 8px;
+        }
+
+        .weather-input {
+            flex: 1;
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 8px 12px;
+            font-size: 13px;
+            color: var(--text-primary);
+            outline: none;
+        }
+        .weather-input:focus {
+            border-color: var(--accent-cyan);
+        }
+
+        .quick-cities {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .quick-city-chip {
+            font-size: 11px;
+            padding: 4px 8px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            cursor: pointer;
+            color: var(--text-secondary);
+            transition: all 0.2s ease;
+        }
+        .quick-city-chip:hover {
+            border-color: var(--accent-cyan);
+            color: var(--text-primary);
+            background: var(--bg-card-hover);
+        }
+
+        .weather-card {
+            background: linear-gradient(135deg, rgba(57, 197, 207, 0.12), rgba(47, 129, 247, 0.15));
+            border: 1px solid rgba(57, 197, 207, 0.3);
+            border-radius: var(--radius-md);
+            padding: 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .weather-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .weather-city-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .weather-temp-hero {
+            font-size: 26px;
+            font-weight: 700;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .weather-condition-badge {
+            font-size: 12px;
+            color: var(--accent-cyan);
+            font-weight: 500;
+        }
+
+        .weather-meta-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+            margin-top: 4px;
+            font-size: 11px;
+            color: var(--text-secondary);
+        }
+
+        .weather-meta-item {
+            background: rgba(0, 0, 0, 0.25);
+            padding: 6px 8px;
+            border-radius: 6px;
+        }
+
+        .weather-provider-tag {
+            font-size: 10px;
+            color: var(--text-muted);
+            text-align: right;
+            margin-top: 4px;
+        }
+
         /* File Upload Box */
         .upload-card {
             background: var(--bg-body);
             border: 2px dashed var(--border-color);
             border-radius: var(--radius-lg);
-            padding: 18px;
+            padding: 16px;
             text-align: center;
             cursor: pointer;
             transition: border-color 0.2s ease, background 0.2s ease;
@@ -205,8 +324,8 @@
         }
 
         .upload-icon {
-            font-size: 28px;
-            margin-bottom: 6px;
+            font-size: 26px;
+            margin-bottom: 4px;
             color: var(--accent-blue);
         }
 
@@ -228,7 +347,7 @@
 
         .selected-file-badge {
             display: none;
-            margin-top: 10px;
+            margin-top: 8px;
             padding: 8px 10px;
             background: var(--bg-card-hover);
             border: 1px solid var(--border-color);
@@ -243,21 +362,22 @@
             display: flex;
             flex-direction: column;
             gap: 8px;
-            margin-top: 12px;
+            margin-top: 10px;
         }
 
         .btn {
             padding: 9px 14px;
             border-radius: var(--radius-md);
-            border: none;
             font-size: 13px;
             font-weight: 500;
             cursor: pointer;
+            border: none;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
-            transition: background-color 0.2s ease, opacity 0.2s ease;
+            gap: 6px;
+            transition: all 0.2s ease;
+            white-space: nowrap;
         }
 
         .btn:disabled {
@@ -269,7 +389,6 @@
             background-color: var(--accent-blue);
             color: white;
         }
-
         .btn-primary:hover:not(:disabled) {
             background-color: var(--accent-blue-hover);
         }
@@ -278,9 +397,16 @@
             background-color: var(--accent-green);
             color: white;
         }
-
         .btn-green:hover:not(:disabled) {
             background-color: var(--accent-green-hover);
+        }
+
+        .btn-cyan {
+            background-color: #1f6f78;
+            color: white;
+        }
+        .btn-cyan:hover:not(:disabled) {
+            background-color: #268994;
         }
 
         .btn-outline {
@@ -288,71 +414,57 @@
             border: 1px solid var(--border-color);
             color: var(--text-secondary);
         }
-
         .btn-outline:hover:not(:disabled) {
             background: var(--bg-card-hover);
             color: var(--text-primary);
         }
 
-        /* Activity / Notice Banner */
         .notice-banner {
-            font-size: 12px;
-            padding: 10px 12px;
-            border-radius: var(--radius-md);
-            border: 1px solid transparent;
             display: none;
+            padding: 8px 12px;
+            border-radius: var(--radius-md);
+            font-size: 12px;
+            line-height: 1.4;
         }
-
         .notice-banner.info {
-            background: rgba(47, 129, 247, 0.12);
-            border-color: rgba(47, 129, 247, 0.3);
+            background: rgba(47, 129, 247, 0.15);
+            border: 1px solid var(--accent-blue);
             color: #79c0ff;
         }
-
         .notice-banner.success {
-            background: rgba(46, 160, 67, 0.15);
-            border-color: rgba(46, 160, 67, 0.3);
+            background: rgba(35, 134, 54, 0.15);
+            border: 1px solid var(--accent-green);
             color: #56d364;
         }
-
         .notice-banner.error {
             background: rgba(248, 81, 73, 0.15);
-            border-color: rgba(248, 81, 73, 0.3);
+            border: 1px solid #f85149;
             color: #ff7b72;
         }
 
-        /* Recent Indexed List */
-        .indexed-list {
+        .history-list {
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 6px;
+            max-height: 140px;
+            overflow-y: auto;
         }
 
-        .indexed-item {
-            font-size: 12px;
-            padding: 8px 10px;
-            background: var(--bg-body);
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-md);
+        .history-item {
             display: flex;
             align-items: center;
             justify-content: space-between;
+            background: var(--bg-body);
+            border: 1px solid var(--border-color);
+            padding: 6px 10px;
+            border-radius: var(--radius-md);
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
         }
-
-        .indexed-item .file-name {
-            font-weight: 500;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            max-width: 170px;
-        }
-
-        .indexed-item .chunk-badge {
-            font-size: 10px;
-            padding: 2px 6px;
+        .history-item:hover {
+            border-color: var(--accent-cyan);
             background: var(--bg-card-hover);
-            border-radius: 10px;
-            color: var(--text-secondary);
         }
 
         /* Main Chat Container */
@@ -362,15 +474,16 @@
             flex-direction: column;
             background-color: var(--bg-body);
             overflow: hidden;
+            min-width: 0;
         }
 
         .chat-history {
             flex: 1;
             overflow-y: auto;
-            padding: 24px;
+            padding: 20px;
             display: flex;
             flex-direction: column;
-            gap: 18px;
+            gap: 16px;
         }
 
         /* Chat Message Bubbles */
@@ -410,11 +523,12 @@
             background-color: var(--ai-bubble);
             border: 1px solid var(--border-color);
             border-radius: var(--radius-lg);
-            padding: 14px 18px;
+            padding: 12px 16px;
             font-size: 14px;
             line-height: 1.6;
             color: var(--text-primary);
             box-shadow: var(--shadow-subtle);
+            word-break: break-word;
         }
 
         .message-row.user .message-bubble {
@@ -422,19 +536,18 @@
             border-color: #2b5585;
         }
 
-        /* Markdown formatting inside bubbles */
         .message-bubble p {
-            margin-bottom: 10px;
+            margin-bottom: 8px;
         }
         .message-bubble p:last-child {
             margin-bottom: 0;
         }
         .message-bubble ul, .message-bubble ol {
-            margin: 8px 0 8px 20px;
+            margin: 6px 0 6px 18px;
         }
         .message-bubble code {
             background-color: rgba(110, 118, 129, 0.2);
-            padding: 2px 6px;
+            padding: 2px 5px;
             border-radius: 4px;
             font-family: monospace;
             font-size: 12px;
@@ -444,30 +557,19 @@
             padding: 12px;
             border-radius: var(--radius-md);
             overflow-x: auto;
-            margin: 10px 0;
+            margin: 8px 0;
         }
         .message-bubble pre code {
             padding: 0;
             background: none;
         }
-        .message-bubble h1, .message-bubble h2, .message-bubble h3 {
-            margin-top: 12px;
-            margin-bottom: 6px;
-            font-weight: 600;
-        }
-        .message-bubble h2 {
-            font-size: 15px;
-            border-bottom: 1px solid var(--border-color);
-            padding-bottom: 4px;
-        }
 
         /* Sources Accordion */
         .sources-container {
-            margin-top: 12px;
+            margin-top: 10px;
             border-top: 1px solid var(--border-color);
             padding-top: 8px;
         }
-
         .sources-toggle {
             font-size: 11px;
             color: var(--text-secondary);
@@ -477,54 +579,44 @@
             gap: 4px;
             user-select: none;
         }
-
-        .sources-toggle:hover {
-            color: var(--accent-blue);
-        }
-
         .sources-content {
-            margin-top: 6px;
             display: none;
-            gap: 6px;
             flex-direction: column;
+            gap: 8px;
+            margin-top: 8px;
         }
-
         .source-card {
             background: rgba(0, 0, 0, 0.25);
             border: 1px solid var(--border-color);
             border-radius: var(--radius-md);
             padding: 8px 10px;
-            font-size: 11px;
-            color: var(--text-secondary);
+            font-size: 12px;
+            line-height: 1.4;
         }
-
         .source-header {
             font-weight: 600;
-            color: #58a6ff;
+            color: var(--accent-blue);
             margin-bottom: 4px;
         }
 
-        /* Chat Input Area */
+        /* Chat Input Footer */
         .chat-input-container {
             background-color: var(--bg-card);
             border-top: 1px solid var(--border-color);
-            padding: 16px 24px;
+            padding: 12px 20px;
             display: flex;
             flex-direction: column;
             gap: 8px;
-            flex-shrink: 0;
         }
 
         .mode-indicator {
-            font-size: 11px;
-            color: var(--text-muted);
+            font-size: 12px;
+            color: var(--text-secondary);
             display: flex;
             align-items: center;
-            gap: 6px;
-        }
-
-        .mode-indicator strong {
-            color: var(--accent-blue);
+            justify-content: space-between;
+            gap: 8px;
+            flex-wrap: wrap;
         }
 
         .input-row {
@@ -538,14 +630,13 @@
             background-color: var(--bg-body);
             border: 1px solid var(--border-color);
             border-radius: var(--radius-md);
-            color: var(--text-primary);
-            font-family: inherit;
+            padding: 10px 14px;
             font-size: 14px;
-            padding: 12px 14px;
+            color: var(--text-primary);
             resize: none;
-            max-height: 140px;
             outline: none;
-            transition: border-color 0.2s ease;
+            max-height: 140px;
+            font-family: inherit;
         }
 
         .chat-textarea:focus {
@@ -553,14 +644,15 @@
         }
 
         .send-btn {
-            height: 44px;
-            width: 44px;
+            height: 42px;
+            width: 42px;
             padding: 0;
             border-radius: var(--radius-md);
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 16px;
+            flex-shrink: 0;
         }
 
         /* Typing spinner */
@@ -586,6 +678,30 @@
             0%, 80%, 100% { transform: scale(0); }
             40% { transform: scale(1); }
         }
+
+        /* Mobile & Tablet Responsive Media Queries */
+        @media (max-width: 860px) {
+            body {
+                height: 100%;
+                overflow-y: auto;
+            }
+            .workspace-container {
+                flex-direction: column;
+                overflow: visible;
+            }
+            aside {
+                width: 100%;
+                border-right: none;
+                border-bottom: 1px solid var(--border-color);
+                max-height: 420px;
+            }
+            main {
+                height: calc(100vh - 70px);
+            }
+            .message-row {
+                max-width: 95%;
+            }
+        }
     </style>
 </head>
 <body>
@@ -595,8 +711,8 @@
         <div class="brand-container">
             <div class="brand-icon">🌲</div>
             <div>
-                <div class="brand-title">Pinecone AI Assistant</div>
-                <div class="brand-subtitle" id="embeddingSubtitle">Offline ONNX Embeddings &bull; RAG &bull; Groq Chat</div>
+                <div class="brand-title">AI Assistant & Knowledge Hub</div>
+                <div class="brand-subtitle" id="embeddingSubtitle">MVC Architecture &bull; Groq &bull; Live Weather &bull; RAG</div>
             </div>
         </div>
 
@@ -605,6 +721,7 @@
                 <span id="vectorDbDot" class="status-dot warn"></span>
                 <span id="vectorDbText">Checking Vector DB...</span>
             </div>
+            <a href="/h2-console" target="_blank" class="btn btn-outline" style="padding: 5px 10px; font-size: 12px; text-decoration: none;">H2 DB Console</a>
             <button class="btn btn-outline" style="padding: 5px 10px; font-size: 12px;" onclick="clearHistory()">Clear Chat</button>
         </div>
     </header>
@@ -618,18 +735,25 @@
             <div>
                 <div class="section-heading">Interaction Mode</div>
                 <div class="mode-selector">
-                    <div class="mode-option active" data-mode="rag" onclick="selectMode('rag')">
+                    <div class="mode-option active" data-mode="weather" onclick="selectMode('weather')">
+                        <span class="icon">🌤️</span>
+                        <div>
+                            <div>Live Weather (3rd-Party API)</div>
+                            <small style="color:var(--text-muted); font-size:11px;">WeatherAPI & Open-Meteo + H2</small>
+                        </div>
+                    </div>
+                    <div class="mode-option" data-mode="rag" onclick="selectMode('rag')">
                         <span class="icon">🧠</span>
                         <div>
                             <div>Ask PDF (RAG)</div>
-                            <small style="color:var(--text-muted); font-size:11px;">Search vector store</small>
+                            <small style="color:var(--text-muted); font-size:11px;">Semantic vector store search</small>
                         </div>
                     </div>
                     <div class="mode-option" data-mode="general" onclick="selectMode('general')">
                         <span class="icon">💬</span>
                         <div>
                             <div>General Chat</div>
-                            <small style="color:var(--text-muted); font-size:11px;">Direct conversation</small>
+                            <small style="color:var(--text-muted); font-size:11px;">Groq LLM + live weather tools</small>
                         </div>
                     </div>
                     <div class="mode-option" data-mode="summarize" onclick="selectMode('summarize')">
@@ -642,8 +766,53 @@
                 </div>
             </div>
 
+            <!-- Live Weather Interactive Panel (shown in weather mode) -->
+            <div id="weatherSidebarSection">
+                <div class="section-heading">Live Weather Search</div>
+                <div class="weather-panel">
+                    <div class="weather-search-row">
+                        <input type="text" id="weatherCityInput" class="weather-input" placeholder="Enter city (e.g. Tokyo, London)..." onkeydown="if(event.key==='Enter') fetchWeatherCard()">
+                        <button class="btn btn-cyan" onclick="fetchWeatherCard()">Search</button>
+                    </div>
+
+                    <div class="quick-cities">
+                        <span class="quick-city-chip" onclick="quickSearchCity('Tokyo')">Tokyo</span>
+                        <span class="quick-city-chip" onclick="quickSearchCity('London')">London</span>
+                        <span class="quick-city-chip" onclick="quickSearchCity('New York')">New York</span>
+                        <span class="quick-city-chip" onclick="quickSearchCity('Paris')">Paris</span>
+                        <span class="quick-city-chip" onclick="quickSearchCity('Mumbai')">Mumbai</span>
+                        <span class="quick-city-chip" onclick="quickSearchCity('Sydney')">Sydney</span>
+                    </div>
+
+                    <div id="liveWeatherCardDisplay" style="display: none;">
+                        <div class="weather-card">
+                            <div class="weather-card-header">
+                                <div class="weather-city-title" id="cardCityName">City, Country</div>
+                                <img id="cardWeatherIcon" src="" alt="weather" style="width: 40px; height: 40px;">
+                            </div>
+                            <div class="weather-temp-hero" id="cardTemp">22°C</div>
+                            <div class="weather-condition-badge" id="cardCondition">Partly cloudy</div>
+                            <div class="weather-meta-grid">
+                                <div class="weather-meta-item">💧 Humidity: <strong id="cardHumidity">65%</strong></div>
+                                <div class="weather-meta-item">💨 Wind: <strong id="cardWind">15 km/h</strong></div>
+                                <div class="weather-meta-item">🌡️ Feels Like: <strong id="cardFeels">23°C</strong></div>
+                                <div class="weather-meta-item">🕒 Updated: <strong id="cardUpdated">Just now</strong></div>
+                            </div>
+                            <div class="weather-provider-tag" id="cardProvider">Source: WeatherAPI.com</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 14px;">
+                    <div class="section-heading">Recent Lookups (H2 DB)</div>
+                    <div id="weatherHistoryList" class="history-list">
+                        <div style="font-size:11px; color:var(--text-muted); font-style:italic;">No recent lookups recorded.</div>
+                    </div>
+                </div>
+            </div>
+
             <!-- PDF Upload Zone -->
-            <div>
+            <div id="pdfSidebarSection" style="display: none;">
                 <div class="section-heading">Document Knowledge Base</div>
                 <div class="upload-card" id="dropZone" onclick="document.getElementById('fileInput').click()">
                     <div class="upload-icon">📂</div>
@@ -669,14 +838,6 @@
 
             <!-- Status Notice -->
             <div id="noticeBanner" class="notice-banner"></div>
-
-            <!-- Indexed Documents List -->
-            <div>
-                <div class="section-heading">Indexed In Vector DB</div>
-                <div id="indexedList" class="indexed-list">
-                    <div style="font-size:12px; color:var(--text-muted); font-style:italic;">No documents indexed yet in this session.</div>
-                </div>
-            </div>
         </aside>
 
         <!-- Main Chat Area -->
@@ -686,13 +847,14 @@
                 <div class="message-row ai">
                     <div class="message-avatar">AI</div>
                     <div class="message-bubble">
-                        <p><strong>👋 Welcome to your Pinecone AI Knowledge Assistant!</strong></p>
-                        <p><strong>Highlights:</strong></p>
+                        <p><strong>👋 Welcome to the AI Assistant!</strong></p>
+                        <p>This project is organized following clean MVC patterns: <strong>Model / Entity &bull; DTO &bull; Service &bull; Controller &bull; View</strong>.</p>
+                        <p><strong>Available Features:</strong></p>
                         <ul>
-                            <li><strong>100% Free Offline Embeddings:</strong> Powered locally by ONNX <code>all-MiniLM-L6-v2</code> &mdash; no OpenAI API key or fees required.</li>
-                            <li><strong>Upload a PDF</strong> to index it into your vector store for instant semantic RAG search.</li>
-                            <li><strong>Summarize PDF</strong> gives you an executive breakdown in seconds.</li>
-                            <li><strong>General Chat</strong> allows direct dialogue with Groq (<code>llama-3.3-70b-versatile</code>).</li>
+                            <li><strong>🌤️ Live Weather:</strong> Real-time 3rd-party weather (WeatherAPI.com with Open-Meteo fallback) persisted into <strong>H2 JPA Database</strong>.</li>
+                            <li><strong>💬 AI Tool Integration:</strong> In chat mode, ask <em>"What's the weather in Tokyo?"</em> and the AI automatically fetches real-time data!</li>
+                            <li><strong>🧠 Document RAG:</strong> Semantic similarity search over PDFs using 100% free offline local embeddings.</li>
+                            <li><strong>📄 Instant PDF Summarization:</strong> Executive structured breakdowns in seconds.</li>
                         </ul>
                     </div>
                 </div>
@@ -701,10 +863,11 @@
             <!-- Chat Input Footer -->
             <div class="chat-input-container">
                 <div class="mode-indicator">
-                    Active Mode: <strong id="activeModeLabel">Ask PDF (RAG via Vector DB)</strong>
+                    <span>Active Mode: <strong id="activeModeLabel" style="color: var(--accent-cyan);">Live Weather (3rd-Party API + AI)</strong></span>
+                    <span id="subModeHint" style="font-size: 11px; color: var(--text-muted);">Enter city name or ask questions like "Should I take an umbrella in London?"</span>
                 </div>
                 <div class="input-row">
-                    <textarea id="messageInput" class="chat-textarea" rows="1" placeholder="Type your question here... (Enter to send, Shift+Enter for newline)"></textarea>
+                    <textarea id="messageInput" class="chat-textarea" rows="1" placeholder="Ask about live weather, general questions, or PDF documents..."></textarea>
                     <button id="sendBtn" class="btn btn-primary send-btn" onclick="sendMessage()">➤</button>
                 </div>
             </div>
@@ -712,8 +875,9 @@
     </div>
 
     <script>
-        let currentMode = 'rag'; // 'rag' | 'general' | 'summarize'
+        let currentMode = 'weather'; // 'weather' | 'rag' | 'general' | 'summarize'
         let selectedFile = null;
+        let lastLoadedCity = 'Tokyo';
 
         const textarea = document.getElementById('messageInput');
         textarea.addEventListener('input', () => {
@@ -730,6 +894,8 @@
 
         window.addEventListener('DOMContentLoaded', () => {
             checkSystemStatus();
+            loadWeatherHistory();
+            fetchWeatherCard('Tokyo');
         });
 
         async function checkSystemStatus() {
@@ -765,17 +931,118 @@
             });
 
             const labels = {
+                'weather': 'Live Weather (3rd-Party API + AI)',
                 'rag': 'Ask PDF (RAG via Vector DB)',
-                'general': 'General Chat',
+                'general': 'General Chat (with Live Weather tool)',
                 'summarize': 'Summarize PDF'
             };
-            document.getElementById('activeModeLabel').innerText = labels[mode];
+            const hints = {
+                'weather': 'Type city (e.g. "Paris") or ask "What should I wear in New York today?"',
+                'rag': 'Ask questions grounded in your uploaded PDF documents',
+                'general': 'Chat directly with Groq (ask general questions or live weather)',
+                'summarize': 'Drop a PDF and click Summarize Document'
+            };
 
-            if (mode === 'summarize' && selectedFile) {
-                summarizeUploadedPdf();
+            document.getElementById('activeModeLabel').innerText = labels[mode];
+            document.getElementById('subModeHint').innerText = hints[mode];
+
+            const weatherSec = document.getElementById('weatherSidebarSection');
+            const pdfSec = document.getElementById('pdfSidebarSection');
+
+            if (mode === 'weather') {
+                weatherSec.style.display = 'block';
+                pdfSec.style.display = 'none';
+            } else if (mode === 'rag' || mode === 'summarize') {
+                weatherSec.style.display = 'none';
+                pdfSec.style.display = 'block';
+            } else {
+                weatherSec.style.display = 'block';
+                pdfSec.style.display = 'block';
             }
         }
 
+        // Live Weather Search
+        async function fetchWeatherCard(cityName) {
+            const city = cityName || document.getElementById('weatherCityInput').value.trim();
+            if (!city) {
+                showNotice('Please enter a city name.', 'error');
+                return;
+            }
+
+            try {
+                showNotice(`Fetching live weather for ${city}...`, 'info');
+                const res = await fetch(`/api/weather?city=${encodeURIComponent(city)}`);
+                const data = await res.json();
+
+                if (!res.ok) {
+                    throw new Error(data.error || 'Failed to fetch weather');
+                }
+
+                lastLoadedCity = data.city;
+                displayWeatherCard(data);
+                loadWeatherHistory();
+                showNotice(`Weather loaded for ${data.city}!`, 'success');
+            } catch (err) {
+                showNotice(`Error: ${err.message}`, 'error');
+            }
+        }
+
+        function quickSearchCity(cityName) {
+            document.getElementById('weatherCityInput').value = cityName;
+            fetchWeatherCard(cityName);
+        }
+
+        function displayWeatherCard(data) {
+            document.getElementById('liveWeatherCardDisplay').style.display = 'block';
+            document.getElementById('cardCityName').innerText = `${data.city}, ${data.country}`;
+            document.getElementById('cardTemp').innerText = `${data.temperatureC}°C (${data.temperatureF}°F)`;
+            document.getElementById('cardCondition').innerText = data.conditionText;
+            document.getElementById('cardHumidity').innerText = `${data.humidity}%`;
+            document.getElementById('cardWind').innerText = `${data.windKph} km/h`;
+            document.getElementById('cardFeels').innerText = data.feelsLikeC != null ? `${data.feelsLikeC}°C` : 'N/A';
+            document.getElementById('cardUpdated').innerText = data.lastUpdated || 'Just now';
+            document.getElementById('cardProvider').innerText = `Source: ${data.provider}`;
+
+            const iconEl = document.getElementById('cardWeatherIcon');
+            if (data.conditionIcon) {
+                iconEl.src = data.conditionIcon;
+                iconEl.style.display = 'block';
+            } else {
+                iconEl.style.display = 'none';
+            }
+        }
+
+        async function loadWeatherHistory() {
+            try {
+                const res = await fetch('/api/weather/history');
+                if (res.ok) {
+                    const list = await res.json();
+                    const container = document.getElementById('weatherHistoryList');
+                    if (!list || list.length === 0) {
+                        container.innerHTML = '<div style="font-size:11px; color:var(--text-muted); font-style:italic;">No recent lookups recorded.</div>';
+                        return;
+                    }
+                    container.innerHTML = '';
+                    list.slice(0, 6).forEach(item => {
+                        const div = document.createElement('div');
+                        div.className = 'history-item';
+                        div.innerHTML = `
+                            <span>📍 <strong>${escapeHtml(item.city)}</strong> (${item.temperatureC}°C, ${escapeHtml(item.conditionText || '')})</span>
+                            <small style="color:var(--text-muted); font-size:10px;">${escapeHtml(item.provider || '')}</small>
+                        `;
+                        div.onclick = () => {
+                            document.getElementById('weatherCityInput').value = item.city;
+                            fetchWeatherCard(item.city);
+                        };
+                        container.appendChild(div);
+                    });
+                }
+            } catch (err) {
+                console.warn('Failed to load weather history:', err);
+            }
+        }
+
+        // PDF Drag & Drop Handlers
         const dropZone = document.getElementById('dropZone');
         ['dragenter', 'dragover'].forEach(eventName => {
             dropZone.addEventListener(eventName, (e) => {
@@ -849,8 +1116,6 @@
                 }
 
                 showNotice(`Indexed ${data.chunkCount} chunks from ${data.pageCount} pages!`, 'success');
-                addIndexedItem(data.fileName, data.chunkCount);
-
                 appendMessage('ai', `✅ **PDF Indexed Successfully!**\n\n- File: \`${data.fileName}\`\n- Pages: **${data.pageCount}**\n- Vector chunks: **${data.chunkCount}**\n- Embeddings: **all-MiniLM-L6-v2 (Local ONNX, Offline)**\n\nYou can now ask questions about this document in **Ask PDF (RAG)** mode!`);
                 selectMode('rag');
             } catch (err) {
@@ -903,6 +1168,7 @@
             }
         }
 
+        // Send Message
         async function sendMessage() {
             const text = textarea.value.trim();
             if (!text) return;
@@ -914,7 +1180,40 @@
             const loadingRow = appendLoading();
 
             try {
-                if (currentMode === 'rag') {
+                if (currentMode === 'weather') {
+                    // Check if user is asking about weather for a city
+                    const res = await fetch('/api/weather/ask', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            city: lastLoadedCity || 'Tokyo',
+                            question: text
+                        })
+                    });
+                    const data = await res.json();
+                    removeLoading(loadingRow);
+
+                    if (!res.ok) {
+                        appendMessage('ai', `❌ **Error:** ${data.error || 'Weather query failed'}`);
+                        return;
+                    }
+
+                    displayWeatherCard(data);
+                    loadWeatherHistory();
+
+                    let msg = `🌤️ **Live Weather for ${data.city}, ${data.country}:**\n` +
+                              `- **Temperature:** ${data.temperatureC}°C (${data.temperatureF}°F)\n` +
+                              `- **Condition:** ${data.conditionText}\n` +
+                              `- **Humidity:** ${data.humidity}% | **Wind:** ${data.windKph} km/h\n` +
+                              `- **Provider:** \`${data.provider}\`\n\n`;
+
+                    if (data.aiCommentary) {
+                        msg += `💡 **AI Advice:**\n${data.aiCommentary}`;
+                    }
+
+                    appendMessage('ai', msg);
+
+                } else if (currentMode === 'rag') {
                     const res = await fetch('/api/chat/rag', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -963,7 +1262,7 @@
             const bubble = document.createElement('div');
             bubble.className = 'message-bubble';
 
-            if (window.marked) {
+            if (window.marked && typeof marked.parse === 'function') {
                 bubble.innerHTML = marked.parse(text);
             } else {
                 bubble.innerText = text;
@@ -1030,28 +1329,13 @@
             }
         }
 
-        function addIndexedItem(fileName, chunks) {
-            const list = document.getElementById('indexedList');
-            if (list.querySelector('div[style*="font-style:italic"]')) {
-                list.innerHTML = '';
-            }
-
-            const item = document.createElement('div');
-            item.className = 'indexed-item';
-            item.innerHTML = `
-                <span class="file-name" title="${escapeHtml(fileName)}">📄 ${escapeHtml(fileName)}</span>
-                <span class="chunk-badge">${chunks} chunks</span>
-            `;
-            list.prepend(item);
-        }
-
         function clearHistory() {
             const history = document.getElementById('chatHistory');
             history.innerHTML = `
                 <div class="message-row ai">
                     <div class="message-avatar">AI</div>
                     <div class="message-bubble">
-                        <p>Chat history cleared. How can I help you today?</p>
+                        <p>Chat history cleared. How can I help you next?</p>
                     </div>
                 </div>
             `;
@@ -1059,7 +1343,7 @@
 
         function escapeHtml(str) {
             if (!str) return '';
-            return str
+            return String(str)
                 .replace(/&/g, '&amp;')
                 .replace(/</g, '&lt;')
                 .replace(/>/g, '&gt;')

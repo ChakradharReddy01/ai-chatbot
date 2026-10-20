@@ -1,6 +1,7 @@
 package com.spring.ai_chatbot.service;
 
 import com.spring.ai_chatbot.config.VectorStoreConfig;
+import com.spring.ai_chatbot.dto.response.*;
 import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,15 +24,22 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service
 public class ChatService {
 
     private static final Logger log = LoggerFactory.getLogger(ChatService.class);
 
+    private static final Pattern WEATHER_PATTERN = Pattern.compile(
+            "(?i)(?:weather|temperature|forecast|raining|climate)\\s+(?:in|for|at|of)\\s+([a-zA-Z\\s]{2,30})"
+    );
+
     private final ChatClient chatClient;
     private final VectorStore vectorStore;
     private final VectorStoreConfig vectorStoreConfig;
+    private final WeatherService weatherService;
     private final TokenTextSplitter tokenTextSplitter;
 
     @Value("${spring.ai.openai.chat.api-key:}")
@@ -39,40 +47,53 @@ public class ChatService {
 
     public ChatService(ChatClient.Builder chatClientBuilder,
                        VectorStore vectorStore,
-                       VectorStoreConfig vectorStoreConfig) {
+                       VectorStoreConfig vectorStoreConfig,
+                       WeatherService weatherService) {
         this.chatClient = chatClientBuilder.build();
         this.vectorStore = vectorStore;
         this.vectorStoreConfig = vectorStoreConfig;
+        this.weatherService = weatherService;
         this.tokenTextSplitter = TokenTextSplitter.builder().build();
     }
 
     @PostConstruct
     public void init() {
         if (StringUtils.hasText(groqApiKey)) {
-            log.info("Groq API Key detected successfully! (starts with '{}...')", groqApiKey.substring(0, Math.min(8, groqApiKey.length())));
+            log.info("Groq API Key detected successfully! (starts with '{}...')",
+                    groqApiKey.substring(0, Math.min(8, groqApiKey.length())));
         } else {
             log.warn("Groq API Key was NOT detected! Please verify GROQ_API_KEY in your IntelliJ Run Configuration.");
         }
     }
 
     /**
-     * General chat conversation
+     * General chat conversation with live weather intelligence
      */
     public String chat(String message) {
         log.info("Processing general chat question: {}", message);
         checkGroqKeyConfigured();
-        return chatClient
-                .prompt()
+
+        String weatherContext = tryExtractWeatherContext(message);
+
+        var promptRequest = chatClient.prompt();
+        if (weatherContext != null) {
+            promptRequest = promptRequest.system(
+                    "You are a helpful AI assistant. You have access to real-time live third-party weather data:\n" +
+                    weatherContext + "\n" +
+                    "Use this live information to answer the user's inquiry accurately, mentioning the live temperature, conditions, and source."
+            );
+        }
+
+        return promptRequest
                 .user(message)
                 .call()
                 .content();
     }
 
     /**
-     * Upload a PDF file, extract text, split into token chunks, and index into Vector DB (Pinecone or local SimpleVectorStore).
-     * Uses 100% FREE offline local ONNX all-MiniLM-L6-v2 embedding model!
+     * Upload a PDF file, extract text, split into token chunks, and index into Vector DB.
      */
-    public PdfIndexResult uploadAndIndexPdf(MultipartFile file) throws IOException {
+    public PdfIndexResultDTO uploadAndIndexPdf(MultipartFile file) throws IOException {
         validatePdfFile(file);
 
         String originalFilename = file.getOriginalFilename() != null ? file.getOriginalFilename() : "document.pdf";
@@ -114,7 +135,7 @@ public class ChatService {
                 splitDocuments.size(), originalFilename, pageCount);
 
         String targetStore = vectorStoreConfig.isPineconeConfigured() ? "Pinecone Vector DB" : "In-Memory Vector Store";
-        return new PdfIndexResult(
+        return new PdfIndexResultDTO(
                 originalFilename,
                 pageCount,
                 splitDocuments.size(),
@@ -125,7 +146,7 @@ public class ChatService {
     /**
      * Ask question with RAG context retrieved from Vector DB
      */
-    public RagResponse chatWithRag(String query) {
+    public RagResponseDTO chatWithRag(String query) {
         log.info("Performing similarity search for query: {}", query);
         checkGroqKeyConfigured();
 
@@ -152,11 +173,11 @@ public class ChatService {
                     .user(query)
                     .call()
                     .content();
-            return new RagResponse(fallback, List.of(), false);
+            return new RagResponseDTO(fallback, List.of(), false);
         }
 
         StringBuilder contextBuilder = new StringBuilder();
-        List<SourceInfo> sources = new ArrayList<>();
+        List<SourceInfoDTO> sources = new ArrayList<>();
 
         for (int i = 0; i < similarDocs.size(); i++) {
             Document doc = similarDocs.get(i);
@@ -165,7 +186,7 @@ public class ChatService {
             contextBuilder.append(String.format("--- [Source %d: %s | Page: %s] ---\n", (i + 1), sourceName, page));
             contextBuilder.append(doc.getText()).append("\n\n");
 
-            sources.add(new SourceInfo(sourceName, String.valueOf(page), doc.getText()));
+            sources.add(new SourceInfoDTO(sourceName, String.valueOf(page), doc.getText()));
         }
 
         String systemPrompt = """
@@ -186,13 +207,13 @@ public class ChatService {
                 .call()
                 .content();
 
-        return new RagResponse(answer, sources, true);
+        return new RagResponseDTO(answer, sources, true);
     }
 
     /**
      * Upload and summarize a PDF document directly
      */
-    public PdfSummaryResult summarizePdf(MultipartFile file) throws IOException {
+    public PdfSummaryResultDTO summarizePdf(MultipartFile file) throws IOException {
         validatePdfFile(file);
         checkGroqKeyConfigured();
 
@@ -249,7 +270,44 @@ public class ChatService {
                 .call()
                 .content();
 
-        return new PdfSummaryResult(originalFilename, documents.size(), summary);
+        return new PdfSummaryResultDTO(originalFilename, documents.size(), summary);
+    }
+
+    public SystemStatusDTO getStatus() {
+        return new SystemStatusDTO(
+                vectorStoreConfig.isPineconeConfigured() ? "Pinecone Vector DB" : "In-Memory SimpleVectorStore (Fallback)",
+                vectorStoreConfig.isPineconeConfigured(),
+                vectorStoreConfig.getIndexName(),
+                "all-MiniLM-L6-v2 (Local ONNX, 384 dims, 100% Free/Offline)"
+        );
+    }
+
+    private String tryExtractWeatherContext(String message) {
+        if (!StringUtils.hasText(message)) return null;
+        try {
+            Matcher matcher = WEATHER_PATTERN.matcher(message);
+            if (matcher.find()) {
+                String rawCity = matcher.group(1).trim().replaceAll("[?.!,]+$", "");
+                if (StringUtils.hasText(rawCity)) {
+                    log.info("Detected weather inquiry for city '{}', fetching live 3rd-party weather data...", rawCity);
+                    WeatherResponseDTO weather = weatherService.getCurrentWeather(rawCity);
+                    return String.format(
+                            "[Live Weather Data for %s, %s]: Temperature: %.1f°C (%.1f°F), Condition: %s, Humidity: %d%%, Wind: %.1f km/h, Feels Like: %.1f°C (Data Provider: %s)",
+                            weather.city(), weather.country(),
+                            weather.temperatureC() != null ? weather.temperatureC() : 0.0,
+                            weather.temperatureF() != null ? weather.temperatureF() : 0.0,
+                            weather.conditionText(),
+                            weather.humidity() != null ? weather.humidity() : 0,
+                            weather.windKph() != null ? weather.windKph() : 0.0,
+                            weather.feelsLikeC() != null ? weather.feelsLikeC() : 0.0,
+                            weather.provider()
+                    );
+                }
+            }
+        } catch (Exception e) {
+            log.warn("Could not retrieve live weather context: {}", e.getMessage());
+        }
+        return null;
     }
 
     private void checkGroqKeyConfigured() {
@@ -270,19 +328,4 @@ public class ChatService {
             throw new IllegalArgumentException("Only PDF files (.pdf) are supported.");
         }
     }
-
-    public SystemStatus getStatus() {
-        return new SystemStatus(
-                vectorStoreConfig.isPineconeConfigured() ? "Pinecone Vector DB" : "In-Memory SimpleVectorStore (Fallback)",
-                vectorStoreConfig.isPineconeConfigured(),
-                vectorStoreConfig.getIndexName(),
-                "all-MiniLM-L6-v2 (Local ONNX, 384 dims, 100% Free/Offline)"
-        );
-    }
-
-    public record PdfIndexResult(String fileName, int pageCount, int chunkCount, String message) {}
-    public record SourceInfo(String document, String page, String snippet) {}
-    public record RagResponse(String answer, List<SourceInfo> sources, boolean contextFound) {}
-    public record PdfSummaryResult(String fileName, int pageCount, String summary) {}
-    public record SystemStatus(String vectorStoreType, boolean pineconeConnected, String indexName, String embeddingModel) {}
 }
