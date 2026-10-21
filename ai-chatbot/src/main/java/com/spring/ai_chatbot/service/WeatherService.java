@@ -7,6 +7,8 @@ import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.tool.annotation.Tool;
+import org.springframework.ai.tool.annotation.ToolParam;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -51,8 +53,11 @@ public class WeatherService {
 
     /**
      * Get live weather for a city with persistence in H2
+     * Annotated with @Tool so Spring AI can register it as an executable LLM tool.
      */
-    public WeatherResponseDTO getCurrentWeather(String city) {
+    @Tool(name = "getLiveWeather", description = "Get real-time live weather information for any city including temperature, conditions, humidity, and wind speed.")
+    public WeatherResponseDTO getCurrentWeather(
+            @ToolParam(description = "The name of the city, e.g. Tokyo, London, Paris, New York") String city) {
         return fetchWeather(city, null);
     }
 

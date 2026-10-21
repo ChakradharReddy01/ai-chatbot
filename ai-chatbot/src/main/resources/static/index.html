@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Chatbot & Knowledge Assistant</title>
+    <title>AI Assistant & Multi-Tool Knowledge Hub</title>
     <!-- Modern Inter font -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -27,6 +27,7 @@
             --accent-purple: #8957e5;
             --accent-orange: #d29922;
             --accent-cyan: #39c5cf;
+            --accent-gold: #f0883e;
             --user-bubble: #1f3a5f;
             --ai-bubble: #21262d;
             --radius-md: 8px;
@@ -135,9 +136,9 @@
             position: relative;
         }
 
-        /* Sidebar: Document & Mode Controls */
+        /* Sidebar: Controls & Features */
         aside {
-            width: 360px;
+            width: 370px;
             background-color: var(--bg-card);
             border-right: 1px solid var(--border-color);
             padding: 16px;
@@ -196,6 +197,40 @@
             font-size: 16px;
         }
 
+        /* Travel Planner Panel */
+        .travel-panel {
+            background: var(--bg-body);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .input-label {
+            font-size: 11px;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+        .form-control {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 7px 10px;
+            font-size: 13px;
+            color: var(--text-primary);
+            outline: none;
+        }
+        .form-control:focus {
+            border-color: var(--accent-gold);
+        }
+
         /* Weather Interactive Panel */
         .weather-panel {
             background: var(--bg-body);
@@ -226,13 +261,13 @@
             border-color: var(--accent-cyan);
         }
 
-        .quick-cities {
+        .quick-chips {
             display: flex;
             flex-wrap: wrap;
             gap: 6px;
         }
 
-        .quick-city-chip {
+        .chip {
             font-size: 11px;
             padding: 4px 8px;
             background: var(--bg-card);
@@ -242,8 +277,8 @@
             color: var(--text-secondary);
             transition: all 0.2s ease;
         }
-        .quick-city-chip:hover {
-            border-color: var(--accent-cyan);
+        .chip:hover {
+            border-color: var(--accent-blue);
             color: var(--text-primary);
             background: var(--bg-card-hover);
         }
@@ -305,6 +340,30 @@
             color: var(--text-muted);
             text-align: right;
             margin-top: 4px;
+        }
+
+        /* Tool Execution Badge inside AI messages */
+        .tool-call-banner {
+            background: rgba(137, 87, 229, 0.12);
+            border: 1px solid rgba(137, 87, 229, 0.4);
+            border-radius: var(--radius-md);
+            padding: 8px 12px;
+            margin-bottom: 12px;
+            font-size: 12px;
+            color: #d2a8ff;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .tool-chip {
+            background: rgba(137, 87, 229, 0.25);
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-family: monospace;
+            color: #f0883e;
+            font-size: 11px;
         }
 
         /* File Upload Box */
@@ -407,6 +466,14 @@
         }
         .btn-cyan:hover:not(:disabled) {
             background-color: #268994;
+        }
+
+        .btn-gold {
+            background-color: #b05a18;
+            color: white;
+        }
+        .btn-gold:hover:not(:disabled) {
+            background-color: #d16b1e;
         }
 
         .btn-outline {
@@ -711,8 +778,8 @@
         <div class="brand-container">
             <div class="brand-icon">🌲</div>
             <div>
-                <div class="brand-title">AI Assistant & Knowledge Hub</div>
-                <div class="brand-subtitle" id="embeddingSubtitle">MVC Architecture &bull; Groq &bull; Live Weather &bull; RAG</div>
+                <div class="brand-title">AI Assistant & Tool Calling Hub</div>
+                <div class="brand-subtitle" id="embeddingSubtitle">Groq Llama 3.1 • Live Tools • Weather & Travel • RAG</div>
             </div>
         </div>
 
@@ -735,11 +802,25 @@
             <div>
                 <div class="section-heading">Interaction Mode</div>
                 <div class="mode-selector">
-                    <div class="mode-option active" data-mode="weather" onclick="selectMode('weather')">
+                    <div class="mode-option active" data-mode="general" onclick="selectMode('general')">
+                        <span class="icon">🤖</span>
+                        <div>
+                            <div>General Chat (Tool Caller)</div>
+                            <small style="color:var(--text-muted); font-size:11px;">Groq LLM calls Weather & Travel tools</small>
+                        </div>
+                    </div>
+                    <div class="mode-option" data-mode="travel" onclick="selectMode('travel')">
+                        <span class="icon">✈️</span>
+                        <div>
+                            <div>Travel Planner</div>
+                            <small style="color:var(--text-muted); font-size:11px;">Weather-aware itineraries + H2</small>
+                        </div>
+                    </div>
+                    <div class="mode-option" data-mode="weather" onclick="selectMode('weather')">
                         <span class="icon">🌤️</span>
                         <div>
-                            <div>Live Weather (3rd-Party API)</div>
-                            <small style="color:var(--text-muted); font-size:11px;">WeatherAPI & Open-Meteo + H2</small>
+                            <div>Live Weather</div>
+                            <small style="color:var(--text-muted); font-size:11px;">Open-Meteo & WeatherAPI + H2</small>
                         </div>
                     </div>
                     <div class="mode-option" data-mode="rag" onclick="selectMode('rag')">
@@ -747,13 +828,6 @@
                         <div>
                             <div>Ask PDF (RAG)</div>
                             <small style="color:var(--text-muted); font-size:11px;">Semantic vector store search</small>
-                        </div>
-                    </div>
-                    <div class="mode-option" data-mode="general" onclick="selectMode('general')">
-                        <span class="icon">💬</span>
-                        <div>
-                            <div>General Chat</div>
-                            <small style="color:var(--text-muted); font-size:11px;">Groq LLM + live weather tools</small>
                         </div>
                     </div>
                     <div class="mode-option" data-mode="summarize" onclick="selectMode('summarize')">
@@ -766,8 +840,60 @@
                 </div>
             </div>
 
-            <!-- Live Weather Interactive Panel (shown in weather mode) -->
-            <div id="weatherSidebarSection">
+            <!-- Travel Planner Sidebar Section -->
+            <div id="travelSidebarSection" style="display: none;">
+                <div class="section-heading">Plan a Custom Trip</div>
+                <div class="travel-panel">
+                    <div class="input-group">
+                        <label class="input-label">Destination</label>
+                        <input type="text" id="travelDestInput" class="form-control" placeholder="e.g. Kyoto, Paris, Rome, Bali...">
+                    </div>
+                    <div style="display: flex; gap: 8px;">
+                        <div class="input-group" style="flex: 1;">
+                            <label class="input-label">Days</label>
+                            <input type="number" id="travelDaysInput" class="form-control" value="3" min="1" max="14">
+                        </div>
+                        <div class="input-group" style="flex: 1;">
+                            <label class="input-label">Budget</label>
+                            <select id="travelBudgetInput" class="form-control">
+                                <option value="Moderate">Moderate</option>
+                                <option value="Budget-friendly">Budget</option>
+                                <option value="Luxury">Luxury</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label">Travel Style</label>
+                        <select id="travelStyleInput" class="form-control">
+                            <option value="Culture & Sightseeing">Culture & Sightseeing</option>
+                            <option value="Food & Culinary">Food & Culinary</option>
+                            <option value="Adventure & Outdoors">Adventure & Outdoors</option>
+                            <option value="Relaxation & Wellness">Relaxation & Wellness</option>
+                        </select>
+                    </div>
+
+                    <div class="quick-chips">
+                        <span class="chip" onclick="quickPlanTrip('Kyoto', 3, 'Culture & Sightseeing')">⛩️ Kyoto</span>
+                        <span class="chip" onclick="quickPlanTrip('Rome', 4, 'Culture & Sightseeing')">🏛️ Rome</span>
+                        <span class="chip" onclick="quickPlanTrip('Bali', 5, 'Relaxation & Wellness')">🌴 Bali</span>
+                        <span class="chip" onclick="quickPlanTrip('Paris', 3, 'Food & Culinary')">🥐 Paris</span>
+                    </div>
+
+                    <button class="btn btn-gold" style="margin-top: 4px;" onclick="generateTravelPlan()">
+                        <span>✨ Generate Weather-Aware Itinerary</span>
+                    </button>
+                </div>
+
+                <div style="margin-top: 14px;">
+                    <div class="section-heading">Recent Trips (H2 DB)</div>
+                    <div id="travelHistoryList" class="history-list">
+                        <div style="font-size:11px; color:var(--text-muted); font-style:italic;">No recent trips saved.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Live Weather Interactive Panel -->
+            <div id="weatherSidebarSection" style="display: none;">
                 <div class="section-heading">Live Weather Search</div>
                 <div class="weather-panel">
                     <div class="weather-search-row">
@@ -775,13 +901,12 @@
                         <button class="btn btn-cyan" onclick="fetchWeatherCard()">Search</button>
                     </div>
 
-                    <div class="quick-cities">
-                        <span class="quick-city-chip" onclick="quickSearchCity('Tokyo')">Tokyo</span>
-                        <span class="quick-city-chip" onclick="quickSearchCity('London')">London</span>
-                        <span class="quick-city-chip" onclick="quickSearchCity('New York')">New York</span>
-                        <span class="quick-city-chip" onclick="quickSearchCity('Paris')">Paris</span>
-                        <span class="quick-city-chip" onclick="quickSearchCity('Mumbai')">Mumbai</span>
-                        <span class="quick-city-chip" onclick="quickSearchCity('Sydney')">Sydney</span>
+                    <div class="quick-chips">
+                        <span class="chip" onclick="quickSearchCity('Tokyo')">Tokyo</span>
+                        <span class="chip" onclick="quickSearchCity('London')">London</span>
+                        <span class="chip" onclick="quickSearchCity('New York')">New York</span>
+                        <span class="chip" onclick="quickSearchCity('Paris')">Paris</span>
+                        <span class="chip" onclick="quickSearchCity('Mumbai')">Mumbai</span>
                     </div>
 
                     <div id="liveWeatherCardDisplay" style="display: none;">
@@ -798,13 +923,13 @@
                                 <div class="weather-meta-item">🌡️ Feels Like: <strong id="cardFeels">23°C</strong></div>
                                 <div class="weather-meta-item">🕒 Updated: <strong id="cardUpdated">Just now</strong></div>
                             </div>
-                            <div class="weather-provider-tag" id="cardProvider">Source: WeatherAPI.com</div>
+                            <div class="weather-provider-tag" id="cardProvider">Source: Open-Meteo</div>
                         </div>
                     </div>
                 </div>
 
                 <div style="margin-top: 14px;">
-                    <div class="section-heading">Recent Lookups (H2 DB)</div>
+                    <div class="section-heading">Recent Weather Queries (H2 DB)</div>
                     <div id="weatherHistoryList" class="history-list">
                         <div style="font-size:11px; color:var(--text-muted); font-style:italic;">No recent lookups recorded.</div>
                     </div>
@@ -847,14 +972,14 @@
                 <div class="message-row ai">
                     <div class="message-avatar">AI</div>
                     <div class="message-bubble">
-                        <p><strong>👋 Welcome to the AI Assistant!</strong></p>
-                        <p>This project is organized following clean MVC patterns: <strong>Model / Entity &bull; DTO &bull; Service &bull; Controller &bull; View</strong>.</p>
-                        <p><strong>Available Features:</strong></p>
+                        <p><strong>👋 Welcome to the AI Multi-Tool Assistant!</strong></p>
+                        <p>Powered by <strong>Groq <code>llama-3.1-8b-instant</code></strong> with automatic <strong>Spring AI Tool Calling</strong>.</p>
+                        <p><strong>Available Capabilities:</strong></p>
                         <ul>
-                            <li><strong>🌤️ Live Weather:</strong> Real-time 3rd-party weather (WeatherAPI.com with Open-Meteo fallback) persisted into <strong>H2 JPA Database</strong>.</li>
-                            <li><strong>💬 AI Tool Integration:</strong> In chat mode, ask <em>"What's the weather in Tokyo?"</em> and the AI automatically fetches real-time data!</li>
-                            <li><strong>🧠 Document RAG:</strong> Semantic similarity search over PDFs using 100% free offline local embeddings.</li>
-                            <li><strong>📄 Instant PDF Summarization:</strong> Executive structured breakdowns in seconds.</li>
+                            <li><strong>🛠️ Automatic Tool Calling:</strong> Ask anything like <em>"What's the weather in Tokyo?"</em> or <em>"Plan a 4-day trip to Rome"</em> &mdash; the AI autonomously executes tools and surfaces execution badges!</li>
+                            <li><strong>✈️ Travel Planner:</strong> Generates daily itineraries grounded in live destination weather.</li>
+                            <li><strong>🌤️ Live Weather:</strong> 100% free real-time weather via Open-Meteo & WeatherAPI with H2 JPA persistence.</li>
+                            <li><strong>🧠 Document RAG:</strong> Semantic similarity search over PDFs using offline local ONNX embeddings.</li>
                         </ul>
                     </div>
                 </div>
@@ -863,11 +988,11 @@
             <!-- Chat Input Footer -->
             <div class="chat-input-container">
                 <div class="mode-indicator">
-                    <span>Active Mode: <strong id="activeModeLabel" style="color: var(--accent-cyan);">Live Weather (3rd-Party API + AI)</strong></span>
-                    <span id="subModeHint" style="font-size: 11px; color: var(--text-muted);">Enter city name or ask questions like "Should I take an umbrella in London?"</span>
+                    <span>Active Mode: <strong id="activeModeLabel" style="color: var(--accent-blue);">General Chat (Tool Caller)</strong></span>
+                    <span id="subModeHint" style="font-size: 11px; color: var(--text-muted);">Try: "What's the weather in Kyoto and plan a 3-day trip there"</span>
                 </div>
                 <div class="input-row">
-                    <textarea id="messageInput" class="chat-textarea" rows="1" placeholder="Ask about live weather, general questions, or PDF documents..."></textarea>
+                    <textarea id="messageInput" class="chat-textarea" rows="1" placeholder="Ask questions, request live weather, plan a trip, or explore documents..."></textarea>
                     <button id="sendBtn" class="btn btn-primary send-btn" onclick="sendMessage()">➤</button>
                 </div>
             </div>
@@ -875,7 +1000,7 @@
     </div>
 
     <script>
-        let currentMode = 'weather'; // 'weather' | 'rag' | 'general' | 'summarize'
+        let currentMode = 'general'; // 'general' | 'travel' | 'weather' | 'rag' | 'summarize'
         let selectedFile = null;
         let lastLoadedCity = 'Tokyo';
 
@@ -895,7 +1020,7 @@
         window.addEventListener('DOMContentLoaded', () => {
             checkSystemStatus();
             loadWeatherHistory();
-            fetchWeatherCard('Tokyo');
+            loadTravelHistory();
         });
 
         async function checkSystemStatus() {
@@ -903,7 +1028,6 @@
                 const res = await fetch('/api/chat/status');
                 if (res.ok) {
                     const data = await res.json();
-                    const badge = document.getElementById('vectorDbBadge');
                     const dot = document.getElementById('vectorDbDot');
                     const text = document.getElementById('vectorDbText');
 
@@ -916,7 +1040,7 @@
                     }
 
                     if (data.embeddingModel) {
-                        document.getElementById('embeddingSubtitle').innerText = `${data.embeddingModel} • Groq LLM`;
+                        document.getElementById('embeddingSubtitle').innerText = `${data.embeddingModel} • Groq Llama 3.1`;
                     }
                 }
             } catch (err) {
@@ -931,15 +1055,17 @@
             });
 
             const labels = {
-                'weather': 'Live Weather (3rd-Party API + AI)',
+                'general': 'General Chat (Groq Tool Caller)',
+                'travel': 'Travel Planner (Weather-Aware)',
+                'weather': 'Live Weather (3rd-Party API)',
                 'rag': 'Ask PDF (RAG via Vector DB)',
-                'general': 'General Chat (with Live Weather tool)',
                 'summarize': 'Summarize PDF'
             };
             const hints = {
-                'weather': 'Type city (e.g. "Paris") or ask "What should I wear in New York today?"',
+                'general': 'Ask anything — Groq automatically detects when to call Weather or Travel tools!',
+                'travel': 'Fill the travel form on the left or type "Plan a 4-day food tour in Paris"',
+                'weather': 'Enter city or ask "Should I take an umbrella in London today?"',
                 'rag': 'Ask questions grounded in your uploaded PDF documents',
-                'general': 'Chat directly with Groq (ask general questions or live weather)',
                 'summarize': 'Drop a PDF and click Summarize Document'
             };
 
@@ -947,17 +1073,134 @@
             document.getElementById('subModeHint').innerText = hints[mode];
 
             const weatherSec = document.getElementById('weatherSidebarSection');
+            const travelSec = document.getElementById('travelSidebarSection');
             const pdfSec = document.getElementById('pdfSidebarSection');
 
-            if (mode === 'weather') {
-                weatherSec.style.display = 'block';
-                pdfSec.style.display = 'none';
-            } else if (mode === 'rag' || mode === 'summarize') {
-                weatherSec.style.display = 'none';
-                pdfSec.style.display = 'block';
-            } else {
-                weatherSec.style.display = 'block';
-                pdfSec.style.display = 'block';
+            weatherSec.style.display = (mode === 'weather') ? 'block' : 'none';
+            travelSec.style.display = (mode === 'travel') ? 'block' : 'none';
+            pdfSec.style.display = (mode === 'rag' || mode === 'summarize') ? 'block' : 'none';
+        }
+
+        // Travel Planner
+        async function generateTravelPlan() {
+            const destination = document.getElementById('travelDestInput').value.trim();
+            if (!destination) {
+                showNotice('Please enter a destination.', 'error');
+                return;
+            }
+
+            const days = parseInt(document.getElementById('travelDaysInput').value, 10) || 3;
+            const budget = document.getElementById('travelBudgetInput').value;
+            const style = document.getElementById('travelStyleInput').value;
+
+            appendMessage('user', `Plan a ${days}-day ${style.toLowerCase()} trip to **${destination}** (${budget} budget)`);
+            const loadingRow = appendLoading();
+            showNotice(`Generating weather-aware itinerary for ${destination}...`, 'info');
+
+            try {
+                const res = await fetch('/api/travel/plan', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        destination: destination,
+                        days: days,
+                        budget: budget,
+                        travelStyle: style
+                    })
+                });
+                const data = await res.json();
+                removeLoading(loadingRow);
+
+                if (!res.ok) {
+                    throw new Error(data.error || 'Failed to generate travel plan');
+                }
+
+                renderTravelPlanResponse(data);
+                loadTravelHistory();
+                showNotice(`Itinerary ready for ${data.destination}!`, 'success');
+            } catch (err) {
+                removeLoading(loadingRow);
+                appendMessage('ai', `❌ **Error:** ${err.message}`);
+                showNotice(err.message, 'error');
+            }
+        }
+
+        function quickPlanTrip(dest, days, style) {
+            document.getElementById('travelDestInput').value = dest;
+            document.getElementById('travelDaysInput').value = days;
+            document.getElementById('travelStyleInput').value = style;
+            generateTravelPlan();
+        }
+
+        function renderTravelPlanResponse(plan) {
+            let msg = `### ✈️ ${plan.days}-Day Itinerary for ${plan.destination} (${plan.travelStyle})\n\n`;
+
+            if (plan.currentDestinationWeather) {
+                const w = plan.currentDestinationWeather;
+                msg += `> 🌦️ **Current Weather in ${w.city}:** ${w.temperatureC}°C (${w.temperatureF}°F), ${w.conditionText} | Humidity: ${w.humidity}%\n\n`;
+            }
+
+            msg += `**Overview:** ${plan.overview}\n\n`;
+
+            if (plan.itinerary && plan.itinerary.length > 0) {
+                msg += `#### 📅 Daily Schedule\n`;
+                plan.itinerary.forEach(d => {
+                    msg += `**Day ${d.dayNumber}: ${d.theme}**\n` +
+                           `- 🌅 *Morning:* ${d.morning}\n` +
+                           `- ☀️ *Afternoon:* ${d.afternoon}\n` +
+                           `- 🌙 *Evening:* ${d.evening}\n\n`;
+                });
+            }
+
+            if (plan.topAttractions && plan.topAttractions.length > 0) {
+                msg += `#### 🏛️ Top Attractions\n` + plan.topAttractions.map(a => `- ${a}`).join('\n') + `\n\n`;
+            }
+
+            if (plan.foodRecommendations && plan.foodRecommendations.length > 0) {
+                msg += `#### 🍜 Food & Dining\n` + plan.foodRecommendations.map(f => `- ${f}`).join('\n') + `\n\n`;
+            }
+
+            if (plan.packingTips && plan.packingTips.length > 0) {
+                msg += `#### 🎒 Packing Tips\n` + plan.packingTips.map(p => `- ${p}`).join('\n');
+            }
+
+            const toolMetadata = [{
+                toolName: 'planTrip',
+                arguments: `{"destination": "${plan.destination}", "days": ${plan.days}}`,
+                resultSummary: `Weather-aware ${plan.days}-day itinerary generated`
+            }];
+
+            appendMessage('ai', msg, null, toolMetadata);
+        }
+
+        async function loadTravelHistory() {
+            try {
+                const res = await fetch('/api/travel/history');
+                if (res.ok) {
+                    const list = await res.json();
+                    const container = document.getElementById('travelHistoryList');
+                    if (!list || list.length === 0) {
+                        container.innerHTML = '<div style="font-size:11px; color:var(--text-muted); font-style:italic;">No recent trips saved.</div>';
+                        return;
+                    }
+                    container.innerHTML = '';
+                    list.slice(0, 5).forEach(item => {
+                        const div = document.createElement('div');
+                        div.className = 'history-item';
+                        div.innerHTML = `
+                            <span>✈️ <strong>${escapeHtml(item.destination)}</strong> (${item.days} days)</span>
+                            <small style="color:var(--text-muted); font-size:10px;">${escapeHtml(item.travelStyle || 'Sightseeing')}</small>
+                        `;
+                        div.onclick = () => {
+                            document.getElementById('travelDestInput').value = item.destination;
+                            document.getElementById('travelDaysInput').value = item.days || 3;
+                            generateTravelPlan();
+                        };
+                        container.appendChild(div);
+                    });
+                }
+            } catch (err) {
+                console.warn('Failed to load travel history:', err);
             }
         }
 
@@ -1023,7 +1266,7 @@
                         return;
                     }
                     container.innerHTML = '';
-                    list.slice(0, 6).forEach(item => {
+                    list.slice(0, 5).forEach(item => {
                         const div = document.createElement('div');
                         div.className = 'history-item';
                         div.innerHTML = `
@@ -1042,7 +1285,7 @@
             }
         }
 
-        // PDF Drag & Drop Handlers
+        // PDF Handlers
         const dropZone = document.getElementById('dropZone');
         ['dragenter', 'dragover'].forEach(eventName => {
             dropZone.addEventListener(eventName, (e) => {
@@ -1181,7 +1424,6 @@
 
             try {
                 if (currentMode === 'weather') {
-                    // Check if user is asking about weather for a city
                     const res = await fetch('/api/weather/ask', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -1229,6 +1471,7 @@
 
                     appendMessage('ai', data.answer, data.sources);
                 } else {
+                    // General Chat with Groq Tool Calling
                     const res = await fetch('/api/chat', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -1242,7 +1485,8 @@
                         return;
                     }
 
-                    appendMessage('ai', data.response);
+                    // Render with tool calling badges if any were executed
+                    appendMessage('ai', data.response, null, data.toolCalls);
                 }
             } catch (err) {
                 removeLoading(loadingRow);
@@ -1250,7 +1494,7 @@
             }
         }
 
-        function appendMessage(sender, text, sources = null) {
+        function appendMessage(sender, text, sources = null, toolCalls = null) {
             const history = document.getElementById('chatHistory');
             const row = document.createElement('div');
             row.className = `message-row ${sender}`;
@@ -1262,11 +1506,22 @@
             const bubble = document.createElement('div');
             bubble.className = 'message-bubble';
 
-            if (window.marked && typeof marked.parse === 'function') {
-                bubble.innerHTML = marked.parse(text);
-            } else {
-                bubble.innerText = text;
+            // Visual Tool Execution Badges
+            if (toolCalls && toolCalls.length > 0) {
+                const banner = document.createElement('div');
+                banner.className = 'tool-call-banner';
+                let chipsHtml = toolCalls.map(t => `<span class="tool-chip">⚡ ${escapeHtml(t.toolName)}</span>`).join(' ');
+                banner.innerHTML = `<span>🛠️ <strong>Tool Executed:</strong></span> ${chipsHtml}`;
+                bubble.appendChild(banner);
             }
+
+            const textContainer = document.createElement('div');
+            if (window.marked && typeof marked.parse === 'function') {
+                textContainer.innerHTML = marked.parse(text);
+            } else {
+                textContainer.innerText = text;
+            }
+            bubble.appendChild(textContainer);
 
             if (sources && sources.length > 0) {
                 const sourcesContainer = document.createElement('div');

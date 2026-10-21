@@ -6,6 +6,7 @@ import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.reader.pdf.PagePdfDocumentReader;
 import org.springframework.ai.reader.pdf.config.PdfDocumentReaderConfig;
@@ -36,10 +37,15 @@ public class ChatService {
             "(?i)(?:weather|temperature|forecast|raining|climate)\\s+(?:in|for|at|of)\\s+([a-zA-Z\\s]{2,30})"
     );
 
+    private static final Pattern TRIP_PATTERN = Pattern.compile(
+            "(?i)(?:plan|itinerary|trip|travel|vacation|visit)\\s+(?:to|for|in)\\s+([a-zA-Z\\s]{2,30})"
+    );
+
     private final ChatClient chatClient;
     private final VectorStore vectorStore;
     private final VectorStoreConfig vectorStoreConfig;
     private final WeatherService weatherService;
+    private final TravelPlannerService travelPlannerService;
     private final TokenTextSplitter tokenTextSplitter;
 
     @Value("${spring.ai.openai.chat.api-key:}")
@@ -48,12 +54,18 @@ public class ChatService {
     public ChatService(ChatClient.Builder chatClientBuilder,
                        VectorStore vectorStore,
                        VectorStoreConfig vectorStoreConfig,
-                       WeatherService weatherService) {
-        this.chatClient = chatClientBuilder.build();
+                       WeatherService weatherService,
+                       TravelPlannerService travelPlannerService) {
         this.vectorStore = vectorStore;
         this.vectorStoreConfig = vectorStoreConfig;
         this.weatherService = weatherService;
+        this.travelPlannerService = travelPlannerService;
         this.tokenTextSplitter = TokenTextSplitter.builder().build();
+
+        // Register tools on the ChatClient so Groq can execute them
+        this.chatClient = chatClientBuilder
+                .defaultTools(weatherService, travelPlannerService)
+                .build();
     }
 
     @PostConstruct
@@ -67,27 +79,95 @@ public class ChatService {
     }
 
     /**
-     * General chat conversation with live weather intelligence
+     * General chat conversation with automatic Spring AI Tool Calling
+     * Returns the answer along with metadata about any executed tools for UI visualization.
      */
-    public String chat(String message) {
+    public ChatResponseDTO chat(String message) {
         log.info("Processing general chat question: {}", message);
         checkGroqKeyConfigured();
 
-        String weatherContext = tryExtractWeatherContext(message);
+        List<ChatResponseDTO.ToolExecutionDTO> executedTools = new ArrayList<>();
 
-        var promptRequest = chatClient.prompt();
-        if (weatherContext != null) {
-            promptRequest = promptRequest.system(
-                    "You are a helpful AI assistant. You have access to real-time live third-party weather data:\n" +
-                    weatherContext + "\n" +
-                    "Use this live information to answer the user's inquiry accurately, mentioning the live temperature, conditions, and source."
-            );
+        try {
+            ChatResponse chatResponse = chatClient.prompt()
+                    .tools(weatherService, travelPlannerService)
+                    .user(message)
+                    .call()
+                    .chatResponse();
+
+            if (chatResponse != null && chatResponse.getResult() != null) {
+                var assistantMessage = chatResponse.getResult().getOutput();
+                if (assistantMessage != null && assistantMessage.hasToolCalls()) {
+                    for (var toolCall : assistantMessage.getToolCalls()) {
+                        log.info("🤖 [TOOL EXECUTION] Tool '{}' called with args: {}", toolCall.name(), toolCall.arguments());
+                        executedTools.add(new ChatResponseDTO.ToolExecutionDTO(
+                                toolCall.name(),
+                                toolCall.arguments(),
+                                "Tool executed successfully"
+                        ));
+                    }
+                }
+                String content = (assistantMessage != null && StringUtils.hasText(assistantMessage.getText()))
+                        ? assistantMessage.getText()
+                        : "Completed request.";
+                return new ChatResponseDTO(content, executedTools);
+            }
+        } catch (Exception e) {
+            log.warn("Tool calling prompt encountered an issue: {}. Attempting context-augmented fallback.", e.getMessage());
         }
 
-        return promptRequest
-                .user(message)
-                .call()
-                .content();
+        // Resilient fallback: contextual tool execution
+        String content = fallbackChatWithContext(message, executedTools);
+        return new ChatResponseDTO(content, executedTools);
+    }
+
+    private String fallbackChatWithContext(String message, List<ChatResponseDTO.ToolExecutionDTO> executedTools) {
+        var promptSpec = chatClient.prompt().user(message);
+
+        // Check if travel intent
+        Matcher tripMatcher = TRIP_PATTERN.matcher(message);
+        if (tripMatcher.find()) {
+            String city = tripMatcher.group(1).trim().replaceAll("[?.!,]+$", "");
+            if (StringUtils.hasText(city)) {
+                log.info("Executing planTrip tool for '{}'", city);
+                TravelPlanResponseDTO plan = travelPlannerService.planTrip(city, 3, "Moderate", "Culture", "Highlights");
+                executedTools.add(new ChatResponseDTO.ToolExecutionDTO(
+                        "planTrip",
+                        "{\"destination\": \"" + city + "\", \"days\": 3}",
+                        "Generated 3-day itinerary with live destination weather"
+                ));
+                promptSpec = promptSpec.system(
+                        "You are a travel assistant. Present this weather-aware travel plan clearly to the user:\n" +
+                        "Destination: " + plan.destination() + "\nOverview: " + plan.overview() + "\n" +
+                        (plan.currentDestinationWeather() != null
+                            ? "Current Weather: " + plan.currentDestinationWeather().temperatureC() + "°C, " + plan.currentDestinationWeather().conditionText()
+                            : "")
+                );
+            }
+        }
+
+        // Check if weather intent
+        Matcher weatherMatcher = WEATHER_PATTERN.matcher(message);
+        if (weatherMatcher.find()) {
+            String city = weatherMatcher.group(1).trim().replaceAll("[?.!,]+$", "");
+            if (StringUtils.hasText(city)) {
+                log.info("Executing getLiveWeather tool for '{}'", city);
+                WeatherResponseDTO weather = weatherService.getCurrentWeather(city);
+                executedTools.add(new ChatResponseDTO.ToolExecutionDTO(
+                        "getLiveWeather",
+                        "{\"city\": \"" + city + "\"}",
+                        weather.temperatureC() + "°C, " + weather.conditionText() + " (" + weather.provider() + ")"
+                ));
+                promptSpec = promptSpec.system(
+                        "You are a helpful AI assistant. Use this live 3rd-party weather data to answer accurately:\n" +
+                        String.format("Location: %s, %s | Temp: %.1f°C (%.1f°F) | Condition: %s | Humidity: %d%% | Wind: %.1f km/h | Source: %s",
+                                weather.city(), weather.country(), weather.temperatureC(), weather.temperatureF(),
+                                weather.conditionText(), weather.humidity(), weather.windKph(), weather.provider())
+                );
+            }
+        }
+
+        return promptSpec.call().content();
     }
 
     /**
@@ -280,34 +360,6 @@ public class ChatService {
                 vectorStoreConfig.getIndexName(),
                 "all-MiniLM-L6-v2 (Local ONNX, 384 dims, 100% Free/Offline)"
         );
-    }
-
-    private String tryExtractWeatherContext(String message) {
-        if (!StringUtils.hasText(message)) return null;
-        try {
-            Matcher matcher = WEATHER_PATTERN.matcher(message);
-            if (matcher.find()) {
-                String rawCity = matcher.group(1).trim().replaceAll("[?.!,]+$", "");
-                if (StringUtils.hasText(rawCity)) {
-                    log.info("Detected weather inquiry for city '{}', fetching live 3rd-party weather data...", rawCity);
-                    WeatherResponseDTO weather = weatherService.getCurrentWeather(rawCity);
-                    return String.format(
-                            "[Live Weather Data for %s, %s]: Temperature: %.1f°C (%.1f°F), Condition: %s, Humidity: %d%%, Wind: %.1f km/h, Feels Like: %.1f°C (Data Provider: %s)",
-                            weather.city(), weather.country(),
-                            weather.temperatureC() != null ? weather.temperatureC() : 0.0,
-                            weather.temperatureF() != null ? weather.temperatureF() : 0.0,
-                            weather.conditionText(),
-                            weather.humidity() != null ? weather.humidity() : 0,
-                            weather.windKph() != null ? weather.windKph() : 0.0,
-                            weather.feelsLikeC() != null ? weather.feelsLikeC() : 0.0,
-                            weather.provider()
-                    );
-                }
-            }
-        } catch (Exception e) {
-            log.warn("Could not retrieve live weather context: {}", e.getMessage());
-        }
-        return null;
     }
 
     private void checkGroqKeyConfigured() {

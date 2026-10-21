@@ -24,13 +24,13 @@ public class ChatController {
     }
 
     /**
-     * Standard Chat (General LLM question answering with live weather support)
+     * Standard Chat (General LLM question answering with automatic Tool Calling)
      */
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> chat(@Valid @RequestBody ChatRequestDTO request) {
         try {
-            String answer = chatService.chat(request.message());
-            return ResponseEntity.ok(new ChatResponseDTO(answer));
+            ChatResponseDTO answer = chatService.chat(request.message());
+            return ResponseEntity.ok(answer);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("error", e.getMessage() != null ? e.getMessage() : "Error processing chat request"));
